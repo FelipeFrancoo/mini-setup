@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b1020">
+<title>Mini Setup</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin:0; min-height:100%; background:#0b1020; color:#eef2ff; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif; }
+  body { background: radial-gradient(ellipse at 15% 0%, #202e52 0, #10182d 42%, #090d18 100%); }
+  .wrap { max-width:1100px; margin:0 auto; padding:24px 22px 30px; }
+  .top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px; }
+  .brand { color:#9aa9cf; font-size:12px; letter-spacing:3px; text-transform:uppercase; }
+  .status { font-size:11px; color:#8c9bbd; border:1px solid #273454; padding:7px 10px; border-radius:99px; }
+  .hero { display:grid; grid-template-columns: 1.4fr 1fr; gap:18px; }
+  .panel { background:rgba(19,28,50,.82); border:1px solid rgba(143,164,213,.16); border-radius:20px; padding:22px; box-shadow:0 12px 32px rgba(0,0,0,.16); }
+  .clock-panel { min-height:210px; display:flex; flex-direction:column; justify-content:center; }
+  .eyebrow { color:#8fa2ce; text-transform:uppercase; letter-spacing:2px; font-size:11px; margin-bottom:12px; }
+  #clock { font-size:clamp(48px, 9vw, 88px); font-weight:200; letter-spacing:-4px; line-height:1; font-variant-numeric:tabular-nums; }
+  #date { margin-top:14px; color:#aab7d6; font-size:15px; }
+  .quote { font-size:19px; line-height:1.45; color:#e3eaff; margin:8px 0 12px; }
+  .muted { color:#8e9dbd; font-size:12px; }
+  .section-title { display:flex; align-items:center; justify-content:space-between; margin:25px 2px 12px; color:#dfe7ff; font-size:14px; letter-spacing:.5px; }
+  .grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; }
+  .tile { display:block; text-decoration:none; color:#eef2ff; background:rgba(19,28,50,.78); border:1px solid rgba(143,164,213,.16); border-radius:16px; padding:16px; min-height:105px; -webkit-tap-highlight-color:transparent; }
+  .tile:active { background:#263654; }
+  .tile .emoji { font-size:22px; margin-bottom:12px; display:block; }
+  .tile strong { display:block; font-size:13px; font-weight:600; margin-bottom:5px; }
+  .tile small { color:#8f9fbe; font-size:11px; line-height:1.35; display:block; }
+  .bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px; }
+  textarea { width:100%; min-height:110px; resize:vertical; background:#0d1426; border:1px solid #293858; border-radius:12px; color:#eaf0ff; padding:12px; font:14px/1.5 -apple-system, Arial, sans-serif; outline:none; }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+  button { border:1px solid #34466c; border-radius:10px; background:#1b2946; color:#e8eeff; padding:9px 12px; font-size:12px; }
+  button:active { background:#314568; }
+  .timer { font-size:30px; font-weight:300; font-variant-numeric:tabular-nums; margin:10px 0 14px; }
+  .footer { text-align:center; margin-top:25px; font-size:10px; color:#667799; letter-spacing:1px; }
+  @media (max-width:700px) {
+    .wrap { padding:16px 13px 22px; }
+    .hero { grid-template-columns:1fr; }
+    .clock-panel { min-height:175px; }
+    .grid { grid-template-columns:repeat(2, 1fr); gap:9px; }
+    .tile { min-height:100px; padding:14px; }
+    .bottom-grid { grid-template-columns:1fr; }
+    .panel { padding:18px; }
+    #clock { letter-spacing:-2px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><div class="brand">MINI SETUP</div><div class="muted" style="margin-top:5px">seu cantinho digital</div></div>
+    <div class="status">● LOCAL · SEM LOGIN</div>
+  </div>
+
+  <div class="hero">
+    <section class="panel clock-panel">
+      <div class="eyebrow">Agora são</div>
+      <div id="clock">--:--</div>
+      <div id="date">Carregando data…</div>
+    </section>
+    <section class="panel">
+      <div class="eyebrow">Lembrete do dia</div>
+      <div class="quote" id="quote">Pequenos passos também levam longe.</div>
+      <div class="muted">Um espaço simples para deixar aberto no setup.</div>
+    </section>
+  </div>
+
+  <div class="section-title"><span>ATALHOS</span><span class="muted">toque para abrir</span></div>
+  <div class="grid">
+    <a class="tile" href="https://github.com/" target="_blank"><span class="emoji">⌘</span><strong>GitHub</strong><small>Projetos e repositórios</small></a>
+    <a class="tile" href="https://github.com/trending" target="_blank"><span class="emoji">↗</span><strong>GitHub Trending</strong><small>O que está em alta</small></a>
+    <a class="tile" href="https://github.com/notifications" target="_blank"><span class="emoji">◉</span><strong>Notificações</strong><small>Atividade da sua conta</small></a>
+    <a class="tile" href="https://roadmap.sh/" target="_blank"><span class="emoji">⌁</span><strong>Developer Roadmaps</strong><small>Trilhas para devs</small></a>
+    <a class="tile" href="https://stackoverflow.com/" target="_blank"><span class="emoji">⌘</span><strong>Stack Overflow</strong><small>Dúvidas de programação</small></a>
+    <a class="tile" href="https://developer.mozilla.org/" target="_blank"><span class="emoji">⌬</span><strong>MDN Web Docs</strong><small>Documentação web</small></a>
+    <a class="tile" href="https://www.youtube.com/" target="_blank"><span class="emoji">▷</span><strong>YouTube</strong><small>Música, vídeos e tutoriais</small></a>
+    <a class="tile" href="https://www.google.com/search?q=lofi+music" target="_blank"><span class="emoji">♫</span><strong>Lo-fi / Música</strong><small>Som de fundo para o setup</small></a>
+  </div>
+
+  <div class="bottom-grid">
+    <section class="panel">
+      <div class="row"><div class="eyebrow" style="margin:0">Bloco de notas</div><button id="clearNotes">Limpar</button></div>
+      <textarea id="notes" placeholder="Anote uma ideia, tarefa ou link..."></textarea>
+      <div class="muted" style="margin-top:8px">Salva neste navegador quando disponível.</div>
+    </section>
+    <section class="panel">
+      <div class="eyebrow">Foco rápido</div>
+      <div class="muted">Temporizador de 25 minutos</div>
+      <div class="timer" id="timer">25:00</div>
+      <div class="row" style="justify-content:flex-start">
+        <button id="start">Iniciar</button><button id="pause">Pausar</button><button id="reset">Reiniciar</button>
+      </div>
+      <div class="muted" id="timerMessage">Um bloco de foco por vez.</div>
+    </section>
+  </div>
+  <div class="footer">MINI SETUP · FEITO PARA UMA TELA ANTIGA TAMBÉM</div>
+</div>
+<script>
+(function () {
+  var clock = document.getElementById('clock');
+  var date = document.getElementById('date');
+  var days = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+  var months = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  function tick() {
+    var d = new Date(), h = d.getHours(), m = d.getMinutes();
+    clock.innerHTML = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+    date.innerHTML = days[d.getDay()] + ', ' + d.getDate() + ' de ' + months[d.getMonth()] + ' de ' + d.getFullYear();
+  }
+  tick(); setInterval(tick, 1000);
+
+  var quotes = [
+    'Pequenos passos também levam longe.',
+    'Feito é melhor que perfeito.',
+    'Construa coisas que você gostaria de usar.',
+    'Um pouco de progresso já é progresso.',
+    'A melhor forma de aprender é colocar a mão na massa.',
+    'Sua próxima ideia pode começar com uma linha de código.'
+  ];
+  document.getElementById('quote').innerHTML = quotes[new Date().getDate() % quotes.length];
+
+  var notes = document.getElementById('notes');
+  try { notes.value = localStorage.getItem('miniSetupNotes') || ''; } catch (e) {}
+  notes.addEventListener('input', function () {
+    try { localStorage.setItem('miniSetupNotes', notes.value); } catch (e) {}
+  });
+  document.getElementById('clearNotes').onclick = function () {
+    notes.value = ''; try { localStorage.removeItem('miniSetupNotes'); } catch (e) {}
+  };
+
+  var seconds = 25 * 60, interval = null, timer = document.getElementById('timer');
+  var message = document.getElementById('timerMessage');
+  function renderTimer() {
+    var mm = Math.floor(seconds / 60), ss = seconds % 60;
+    timer.innerHTML = (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss;
+  }
+  document.getElementById('start').onclick = function () {
+    if (interval) return;
+    message.innerHTML = 'Foco ligado. Você consegue!';
+    interval = setInterval(function () {
+      if (seconds > 0) { seconds--; renderTimer(); }
+      else { clearInterval(interval); interval = null; message.innerHTML = 'Tempo concluído! Faça uma pausa.'; }
+    }, 1000);
+  };
+  document.getElementById('pause').onclick = function () {
+    if (interval) { clearInterval(interval); interval = null; message.innerHTML = 'Temporizador pausado.'; }
+  };
+  document.getElementById('reset').onclick = function () {
+    if (interval) clearInterval(interval);
+    interval = null; seconds = 25 * 60; renderTimer(); message.innerHTML = 'Um bloco de foco por vez.';
+  };
+})();
+</script>
+</body>
+</html>
