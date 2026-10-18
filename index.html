@@ -10,14 +10,15 @@
 
 <style>
 * {
-    -webkit-box-sizing: border-box;
     box-sizing: border-box;
+    -webkit-box-sizing: border-box;
 }
 
 html, body {
     width: 100%;
     height: 100%;
     margin: 0;
+    padding: 0;
     overflow: hidden;
     background: #101210;
     color: #e0e5df;
@@ -30,8 +31,8 @@ body {
 }
 
 #app {
-    height: 100%;
     width: 100%;
+    height: 100%;
     max-width: 1400px;
     margin: 0 auto;
     display: -webkit-box;
@@ -40,12 +41,12 @@ body {
     -webkit-box-orient: vertical;
     -webkit-flex-direction: column;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .topbar {
-    height: 43px;
-    min-height: 43px;
-    border-bottom: 1px solid #303830;
+    height: 44px;
+    min-height: 44px;
     display: -webkit-box;
     display: -webkit-flex;
     display: flex;
@@ -55,24 +56,21 @@ body {
     -webkit-box-align: center;
     -webkit-align-items: center;
     align-items: center;
-    color: #9da99c;
-    font-size: 15px;
+    border-bottom: 1px solid #303830;
+    font-size: 14px;
+    color: #82917f;
     letter-spacing: 1px;
 }
 
 .brand {
     color: #b8e6a7;
     font-weight: bold;
-    font-size: 18px;
+    font-size: 17px;
 }
 
-.status {
+.top-status {
     color: #a9d99a;
-    font-size: 13px;
-}
-
-.status:before {
-    content: "● ";
+    font-size: 12px;
 }
 
 #main {
@@ -80,14 +78,15 @@ body {
     -webkit-flex: 1;
     flex: 1;
     min-height: 0;
-    padding: 15px 0 12px;
+    padding: 15px 0 13px;
     display: -webkit-box;
     display: -webkit-flex;
     display: flex;
+    overflow: hidden;
 }
 
 .left {
-    width: 43%;
+    width: 44%;
     min-width: 0;
     padding-right: 20px;
     border-right: 1px solid #303830;
@@ -100,7 +99,7 @@ body {
 }
 
 .right {
-    width: 57%;
+    width: 56%;
     min-width: 0;
     padding-left: 20px;
     display: -webkit-box;
@@ -109,69 +108,92 @@ body {
     -webkit-box-orient: vertical;
     -webkit-flex-direction: column;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .label {
     color: #82917f;
-    font-size: 13px;
+    font-size: 12px;
     letter-spacing: 1.5px;
     margin-bottom: 10px;
 }
 
 .clockbox {
-    padding: 8px 0 15px;
+    padding: 8px 0 17px;
     border-bottom: 1px solid #303830;
 }
 
 #clock {
     font-size: 76px;
     font-weight: bold;
-    line-height: 1.12;
+    line-height: 1.1;
     letter-spacing: -4px;
     color: #e4f2df;
     white-space: nowrap;
 }
 
 #date {
-    margin-top: 7px;
+    margin-top: 9px;
     color: #a4afa1;
-    font-size: 19px;
+    font-size: 17px;
 }
 
 .stats {
     display: -webkit-box;
     display: -webkit-flex;
     display: flex;
-    margin-top: 14px;
+    padding: 15px 0;
+    border-bottom: 1px solid #303830;
 }
 
 .stat {
     width: 33.33%;
-    padding: 6px 7px 6px 0;
+    padding-right: 5px;
 }
 
 .stat-number {
-    font-size: 28px;
-    font-weight: bold;
     color: #c1e9b2;
+    font-size: 25px;
+    font-weight: bold;
 }
 
 .stat-name {
-    font-size: 12px;
-    color: #899587;
-    margin-top: 4px;
+    color: #82917f;
+    font-size: 10px;
+    margin-top: 5px;
 }
 
-.activity {
+.stack {
+    padding-top: 15px;
+}
+
+.stack-list {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.tech {
+    color: #c4d8bd;
+    background: #1b241b;
+    border: 1px solid #303d2e;
+    padding: 7px 9px;
+    font-size: 12px;
+}
+
+.system {
     margin-top: auto;
     padding-top: 12px;
     border-top: 1px solid #303830;
 }
 
-.activity-line {
-    font-size: 14px;
-    line-height: 1.7;
-    color: #b7c0b3;
+.system-line {
+    font-size: 13px;
+    line-height: 1.8;
+    color: #aab5a5;
 }
 
 .green {
@@ -182,74 +204,124 @@ body {
     color: #7f8b7d;
 }
 
-.section {
+.workspace {
+    height: 61%;
     min-height: 0;
-}
-
-.repo-section {
-    height: 59%;
-    min-height: 0;
+    overflow: hidden;
     border-bottom: 1px solid #303830;
-    padding-bottom: 10px;
+    padding-bottom: 12px;
 }
 
-.event-section {
-    height: 41%;
-    min-height: 0;
-    padding-top: 12px;
+.workspace-heading {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    margin-bottom: 8px;
 }
 
-.repo {
-    padding: 9px 0;
-    border-bottom: 1px solid #252d25;
+.workspace-heading .label {
+    margin-bottom: 0;
 }
 
-.repo-name {
+.workspace-count {
+    font-size: 11px;
+    color: #7f8b7d;
+}
+
+#projects {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+    gap: 10px;
+    -webkit-align-content: flex-start;
+    align-content: flex-start;
+}
+
+.project {
+    width: calc(50% - 5px);
+    width: -webkit-calc(50% - 5px);
+    background: #171c17;
+    border: 1px solid #303830;
+    border-left: 3px solid #8ebd7d;
+    padding: 12px 12px 10px;
+    min-width: 0;
+}
+
+.project-name {
     color: #c5e9b7;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.repo-desc {
+.project-desc {
     color: #9aa497;
-    font-size: 13px;
-    margin-top: 5px;
+    font-size: 12px;
+    line-height: 1.5;
+    margin-top: 6px;
+    height: 34px;
+    overflow: hidden;
+}
+
+.project-meta {
+    margin-top: 8px;
+    color: #82917f;
+    font-size: 10px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.repo-meta {
-    color: #7f8e7b;
+.terminal {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+    min-height: 0;
+    padding-top: 12px;
+    overflow: hidden;
+}
+
+.terminal-box {
+    background: #141814;
+    border: 1px solid #283128;
+    padding: 10px 13px;
+    height: 100%;
+    overflow: hidden;
+}
+
+.terminal-title {
+    color: #82917f;
+    font-size: 11px;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.terminal-line {
     font-size: 12px;
-    margin-top: 5px;
-}
-
-.event {
-    padding: 6px 0;
+    line-height: 1.8;
     color: #aab5a5;
-    font-size: 13px;
-    line-height: 1.45;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.event strong {
-    color: #c5e9b7;
-    font-weight: normal;
-}
-
-.empty {
-    color: #7f8b7d;
-    font-size: 14px;
-    padding: 12px 0;
-    line-height: 1.6;
+.prompt {
+    color: #b8e6a7;
 }
 
 .footer {
-    min-height: 29px;
-    height: 29px;
+    min-height: 28px;
+    height: 28px;
     border-top: 1px solid #303830;
     display: -webkit-box;
     display: -webkit-flex;
@@ -260,7 +332,7 @@ body {
     -webkit-box-align: center;
     -webkit-align-items: center;
     align-items: center;
-    font-size: 11px;
+    font-size: 10px;
     color: #738071;
 }
 
@@ -270,56 +342,135 @@ body {
     }
 
     .topbar {
-        font-size: 11px;
+        height: 34px;
+        min-height: 34px;
+        font-size: 10px;
     }
 
     .brand {
-        font-size: 14px;
+        font-size: 12px;
     }
 
-    #clock {
-        font-size: 47px;
-        letter-spacing: -2px;
-    }
-
-    #date {
-        font-size: 13px;
+    #main {
+        padding-top: 9px;
+        padding-bottom: 8px;
     }
 
     .left {
         padding-right: 10px;
+        width: 43%;
     }
 
     .right {
         padding-left: 10px;
+        width: 57%;
+    }
+
+    #clock {
+        font-size: 44px;
+        letter-spacing: -2px;
+    }
+
+    #date {
+        font-size: 12px;
     }
 
     .label {
-        font-size: 10px;
-    }
-
-    .repo-name {
-        font-size: 13px;
-    }
-
-    .repo-desc, .event {
-        font-size: 10px;
-    }
-
-    .repo-meta {
         font-size: 9px;
+        margin-bottom: 7px;
     }
 
     .stat-number {
-        font-size: 19px;
+        font-size: 18px;
     }
 
     .stat-name {
+        font-size: 8px;
+    }
+
+    .tech {
+        font-size: 9px;
+        padding: 5px;
+    }
+
+    .system-line {
         font-size: 9px;
     }
 
-    .activity-line {
-        font-size: 10px;
+    .project {
+        padding: 7px;
+    }
+
+    .project-name {
+        font-size: 11px;
+    }
+
+    .project-desc {
+        font-size: 9px;
+        height: 26px;
+    }
+
+    .project-meta {
+        font-size: 8px;
+    }
+
+    .terminal-line {
+        font-size: 9px;
+    }
+}
+
+@media screen and (max-height: 500px) {
+    body {
+        padding-top: 5px;
+        padding-bottom: 4px;
+    }
+
+    .topbar {
+        height: 30px;
+        min-height: 30px;
+    }
+
+    #main {
+        padding-top: 6px;
+        padding-bottom: 6px;
+    }
+
+    .clockbox {
+        padding-top: 2px;
+        padding-bottom: 9px;
+    }
+
+    #clock {
+        font-size: 56px;
+    }
+
+    #date {
+        margin-top: 4px;
+    }
+
+    .stats {
+        padding: 8px 0;
+    }
+
+    .stack {
+        padding-top: 8px;
+    }
+
+    .project {
+        padding: 7px;
+    }
+
+    .project-desc {
+        height: 25px;
+    }
+
+    .terminal-box {
+        padding: 6px 9px;
+    }
+
+    .footer {
+        height: 22px;
+        min-height: 22px;
     }
 }
 </style>
@@ -328,14 +479,15 @@ body {
 <body>
 <div id="app">
 
-    <div class="topbar">
+    <header class="topbar">
         <div class="brand">[ PAINEL_DEV ]</div>
-        <div>FELIPEFRANCOO</div>
-        <div id="api-status" class="status">CONECTANDO</div>
-    </div>
+        <div>FELIPE / WORKSPACE</div>
+        <div class="top-status">● LOCAL MODE</div>
+    </header>
 
-    <div id="main">
-        <div class="left">
+    <main id="main">
+
+        <section class="left">
 
             <div class="clockbox">
                 <div class="label">HORÁRIO LOCAL</div>
@@ -345,65 +497,143 @@ body {
 
             <div class="stats">
                 <div class="stat">
-                    <div id="repo-count" class="stat-number">--</div>
-                    <div class="stat-name">REPOSITÓRIOS</div>
+                    <div class="stat-number" id="project-count">04</div>
+                    <div class="stat-name">PROJETOS</div>
                 </div>
                 <div class="stat">
-                    <div id="followers" class="stat-number">--</div>
-                    <div class="stat-name">SEGUIDORES</div>
+                    <div class="stat-number">ES5</div>
+                    <div class="stat-name">JAVASCRIPT</div>
                 </div>
                 <div class="stat">
-                    <div id="stars" class="stat-number">--</div>
-                    <div class="stat-name">ESTRELAS</div>
+                    <div class="stat-number">4:3</div>
+                    <div class="stat-name">DISPLAY</div>
                 </div>
             </div>
 
-            <div class="activity">
-                <div class="label">SISTEMA</div>
-                <div class="activity-line">
-                    <span class="green">●</span> Relógio local ativo
-                </div>
-                <div id="connection" class="activity-line">
-                    <span class="muted">●</span> Aguardando API do GitHub
-                </div>
-                <div id="updated" class="activity-line muted">
-                    Última atualização: --
-                </div>
-            </div>
-
-        </div>
-
-        <div class="right">
-
-            <div class="repo-section section">
-                <div class="label">REPOSITÓRIOS RECENTES</div>
-                <div id="repos">
-                    <div class="empty">Carregando projetos públicos...</div>
+            <div class="stack">
+                <div class="label">TECH STACK</div>
+                <div class="stack-list">
+                    <div class="tech">React</div>
+                    <div class="tech">Next.js</div>
+                    <div class="tech">TypeScript</div>
+                    <div class="tech">Node.js</div>
+                    <div class="tech">PostgreSQL</div>
+                    <div class="tech">Git</div>
+                    <div class="tech">Docker</div>
+                    <div class="tech">REST API</div>
                 </div>
             </div>
 
-            <div class="event-section section">
-                <div class="label">ATIVIDADE PÚBLICA RECENTE</div>
-                <div id="events">
-                    <div class="empty">Consultando atividade...</div>
+            <div class="system">
+                <div class="label">SESSÃO LOCAL</div>
+                <div class="system-line">
+                    <span class="green">●</span> Interface carregada
+                </div>
+                <div class="system-line">
+                    <span class="green">●</span> Modo offline disponível
+                </div>
+                <div class="system-line">
+                    <span class="muted">●</span> Tempo ativo:
+                    <span id="uptime">00:00:00</span>
                 </div>
             </div>
 
-        </div>
-    </div>
+        </section>
 
-    <div class="footer">
+        <section class="right">
+
+            <div class="workspace">
+                <div class="workspace-heading">
+                    <div class="label">WORKSPACE / PROJETOS</div>
+                    <div class="workspace-count" id="workspace-count">
+                        04 ITEMS
+                    </div>
+                </div>
+
+                <div id="projects"></div>
+            </div>
+
+            <div class="terminal">
+                <div class="terminal-box">
+                    <div class="terminal-title">
+                        TERMINAL / SYSTEM STATUS
+                    </div>
+                    <div class="terminal-line">
+                        <span class="prompt">dev@ipad:~$</span>
+                        workspace --status
+                    </div>
+                    <div class="terminal-line">
+                        BUILD: <span class="green">READY</span>
+                        &nbsp; / &nbsp; MODE: IDLE
+                    </div>
+                    <div class="terminal-line">
+                        UI: <span class="green">STABLE</span>
+                        &nbsp; / &nbsp; NETWORK: NOT REQUIRED
+                    </div>
+                    <div class="terminal-line">
+                        <span class="prompt">dev@ipad:~$</span>
+                        <span class="muted">waiting for next session_</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer class="footer">
         <div>DEV MONITOR / STATIC MODE</div>
-        <div>GITHUB REST API</div>
-        <div id="footer-time">SYNC --:--</div>
-    </div>
+        <div>NO API · NO TRACKING</div>
+        <div id="footer-date">LOCAL CLOCK</div>
+    </footer>
 
 </div>
 
 <script>
 (function () {
-    var username = "FelipeFrancoo";
-    var refreshMs = 15 * 60 * 1000;
+
+    /*
+     * =========================================
+     * PERSONALIZE SEUS PROJETOS AQUI
+     *
+     * Copie um bloco para adicionar outro projeto.
+     * Não precisa alterar o HTML ou o CSS.
+     *
+     * name: nome do projeto
+     * desc: descrição curta
+     * tech: tecnologias principais
+     * status: status mostrado no cartão
+     * =========================================
+     */
+
+    var PROJECTS = [
+        {
+            name: "CineGo",
+            desc: "Plataforma de filmes e entretenimento.",
+            tech: "Next.js / SaaS",
+            status: "EM DESENVOLVIMENTO"
+        },
+        {
+            name: "TCC / IA",
+            desc: "Detecção de textos acadêmicos gerados por IA.",
+            tech: "Python / NLP",
+            status: "PESQUISA"
+        },
+        {
+            name: "Machine Tracker",
+            desc: "Controle de empréstimos e equipamentos.",
+            tech: "PostgreSQL / Web",
+            status: "PROJETO"
+        },
+        {
+            name: "Side Projects",
+            desc: "Experimentos, automações e novas ideias.",
+            tech: "Node.js / APIs",
+            status: "BACKLOG"
+        }
+    ];
+
+    var startTime = new Date().getTime();
 
     function byId(id) {
         return document.getElementById(id);
@@ -413,13 +643,24 @@ body {
         return n < 10 ? "0" + n : String(n);
     }
 
+    function escapeHTML(value) {
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
     function updateClock() {
         var d = new Date();
+
         var days = [
             "Domingo", "Segunda-feira", "Terça-feira",
             "Quarta-feira", "Quinta-feira", "Sexta-feira",
             "Sábado"
         ];
+
         var months = [
             "janeiro", "fevereiro", "março", "abril",
             "maio", "junho", "julho", "agosto",
@@ -436,268 +677,66 @@ body {
             d.getDate() + " de " +
             months[d.getMonth()];
 
-        byId("footer-time").innerHTML =
-            "SYNC " + pad(d.getHours()) + ":" + pad(d.getMinutes());
+        byId("footer-date").innerHTML =
+            "LOCAL " + pad(d.getHours()) +
+            ":" + pad(d.getMinutes());
     }
 
-    function request(url, callback) {
-        var xhr = new XMLHttpRequest();
+    function updateUptime() {
+        var elapsed = Math.floor(
+            (new Date().getTime() - startTime) / 1000
+        );
 
-        try {
-            xhr.open("GET", url, true);
-            xhr.timeout = 12000;
-            xhr.setRequestHeader("Accept", "application/vnd.github+json");
+        var hours = Math.floor(elapsed / 3600);
+        var minutes = Math.floor((elapsed % 3600) / 60);
+        var seconds = elapsed % 60;
 
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState !== 4) {
-                    return;
-                }
-
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    try {
-                        callback(null, JSON.parse(xhr.responseText));
-                    } catch (e) {
-                        callback("JSON inválido", null);
-                    }
-                } else {
-                    callback("HTTP " + xhr.status, null);
-                }
-            };
-
-            xhr.ontimeout = function () {
-                callback("Tempo esgotado", null);
-            };
-
-            xhr.onerror = function () {
-                callback("Falha de conexão", null);
-            };
-
-            xhr.send(null);
-        } catch (e) {
-            callback("Erro de conexão", null);
-        }
+        byId("uptime").innerHTML =
+            pad(hours) + ":" +
+            pad(minutes) + ":" +
+            pad(seconds);
     }
 
-    function safeText(value, fallback) {
-        if (value === null || value === undefined || value === "") {
-            return fallback;
-        }
-
-        return String(value)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#39;");
-    }
-
-    function shortDate(value) {
-        if (!value) {
-            return "data indisponível";
-        }
-
-        var d = new Date(value);
-
-        if (isNaN(d.getTime())) {
-            return "data indisponível";
-        }
-
-        return pad(d.getDate()) + "/" +
-            pad(d.getMonth() + 1) + "/" +
-            d.getFullYear();
-    }
-
-    function relativeDate(value) {
-        if (!value) {
-            return "";
-        }
-
-        var then = new Date(value).getTime();
-
-        if (isNaN(then)) {
-            return "";
-        }
-
-        var hours = Math.floor((new Date().getTime() - then) / 3600000);
-
-        if (hours < 0) {
-            return shortDate(value);
-        }
-
-        if (hours < 1) {
-            return "há menos de 1 hora";
-        }
-
-        if (hours < 24) {
-            return "há " + hours + "h";
-        }
-
-        var days = Math.floor(hours / 24);
-
-        if (days < 30) {
-            return "há " + days + " dia(s)";
-        }
-
-        return shortDate(value);
-    }
-
-    function renderRepos(data) {
+    function renderProjects() {
         var html = "";
-        var totalStars = 0;
         var i;
-        var r;
+        var p;
 
-        if (!data || !data.length) {
-            byId("repos").innerHTML =
-                '<div class="empty">Nenhum repositório público encontrado.</div>';
-            return;
-        }
+        for (i = 0; i < PROJECTS.length; i++) {
+            p = PROJECTS[i];
 
-        for (i = 0; i < data.length; i++) {
-            r = data[i];
-            totalStars += r.stargazers_count || 0;
-
-            html += '<div class="repo">';
-            html += '<div class="repo-name">' +
-                safeText(r.name, "Projeto") + '</div>';
-            html += '<div class="repo-desc">' +
-                safeText(r.description, "Sem descrição") + '</div>';
-            html += '<div class="repo-meta">' +
-                safeText(r.language, "Linguagem não informada") +
-                ' &nbsp; / &nbsp; ★ ' +
-                (r.stargazers_count || 0) +
-                ' &nbsp; / &nbsp; PUSH ' +
-                shortDate(r.pushed_at) +
-                '</div>';
+            html += '<div class="project">';
+            html += '<div class="project-name">' +
+                escapeHTML(p.name) + '</div>';
+            html += '<div class="project-desc">' +
+                escapeHTML(p.desc) + '</div>';
+            html += '<div class="project-meta">' +
+                escapeHTML(p.tech) + '</div>';
+            html += '<div class="project-meta">' +
+                '<span class="green">●</span> ' +
+                escapeHTML(p.status) + '</div>';
             html += '</div>';
         }
 
-        byId("repos").innerHTML = html;
-        byId("repo-count").innerHTML = data.length + "+";
-        byId("stars").innerHTML = totalStars;
+        byId("projects").innerHTML = html;
+        byId("project-count").innerHTML =
+            pad(PROJECTS.length);
+
+        byId("workspace-count").innerHTML =
+            pad(PROJECTS.length) + " ITEMS";
     }
 
-    function renderEvents(data) {
-        var html = "";
-        var shown = 0;
-        var i;
-        var e;
-        var repo;
-        var label;
+    function init() {
+        renderProjects();
+        updateClock();
+        updateUptime();
 
-        if (!data || !data.length) {
-            byId("events").innerHTML =
-                '<div class="empty">Sem eventos públicos recentes.</div>';
-            return;
-        }
-
-        for (i = 0; i < data.length && shown < 3; i++) {
-            e = data[i];
-            repo = e.repo && e.repo.name ? e.repo.name : "repositório";
-            label = "";
-
-            if (e.type === "PushEvent") {
-                label = "Push em ";
-            } else if (e.type === "CreateEvent") {
-                label = "Criação em ";
-            } else if (e.type === "WatchEvent") {
-                label = "Estrela em ";
-            } else if (e.type === "IssuesEvent") {
-                label = "Issue em ";
-            } else if (e.type === "PullRequestEvent") {
-                label = "Pull request em ";
-            } else {
-                continue;
-            }
-
-            html += '<div class="event"><strong>' +
-                safeText(label, "") + '</strong>' +
-                safeText(repo, "repositório") +
-                '<br><span class="muted">' +
-                safeText(relativeDate(e.created_at), "") +
-                '</span></div>';
-
-            shown++;
-        }
-
-        if (!shown) {
-            html = '<div class="empty">Nenhum push ou evento relevante disponível.</div>';
-        }
-
-        byId("events").innerHTML = html;
+        window.setInterval(updateClock, 1000);
+        window.setInterval(updateUptime, 1000);
     }
 
-    function setStatus(text, connected) {
-        byId("api-status").innerHTML = text;
-        byId("api-status").style.color = connected ? "#a9d99a" : "#d8b17a";
-        byId("connection").innerHTML = connected
-            ? '<span class="green">●</span> API do GitHub conectada'
-            : '<span class="muted">●</span> API indisponível; tentando novamente';
-    }
+    init();
 
-    function refresh() {
-        var profileDone = false;
-        var reposDone = false;
-        var eventsDone = false;
-        var success = false;
-
-        function finishOne() {
-            if (profileDone && reposDone && eventsDone) {
-                setStatus(success ? "API ONLINE" : "API OFFLINE", success);
-                byId("updated").innerHTML =
-                    "Última tentativa: " + pad(new Date().getHours()) +
-                    ":" + pad(new Date().getMinutes());
-            }
-        }
-
-        request("https://api.github.com/users/" + username, function (err, data) {
-            profileDone = true;
-
-            if (!err && data) {
-                success = true;
-                byId("repo-count").innerHTML = data.public_repos;
-                byId("followers").innerHTML = data.followers;
-            }
-
-            finishOne();
-        });
-
-        request("https://api.github.com/users/" + username +
-            "/repos?sort=pushed&per_page=4", function (err, data) {
-            reposDone = true;
-
-            if (!err && data) {
-                success = true;
-                renderRepos(data);
-            } else {
-                byId("repos").innerHTML =
-                    '<div class="empty">Não foi possível carregar os projetos.</div>';
-            }
-
-            finishOne();
-        });
-
-        request("https://api.github.com/users/" + username +
-            "/events/public?per_page=10", function (err, data) {
-            eventsDone = true;
-
-            if (!err && data) {
-                success = true;
-                renderEvents(data);
-            } else {
-                byId("events").innerHTML =
-                    '<div class="empty">Atividade indisponível no momento.</div>';
-            }
-
-            finishOne();
-        });
-    }
-
-    updateClock();
-    window.setInterval(updateClock, 1000);
-
-    refresh();
-    window.setInterval(refresh, refreshMs);
 }());
 </script>
 </body>
