@@ -1,280 +1,704 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Painel Dev">
-<meta name="format-detection" content="telephone=no">
 <title>Painel Dev</title>
+
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-html{min-height:100%;background:#07090d}
-body{min-height:100%;background:#07090d;color:#c3cbd6;font-family:Menlo,"SF Mono",Monaco,Consolas,"Liberation Mono",monospace;font-size:12px;line-height:1.45;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:rgba(0,0,0,0)}
-a{color:inherit;text-decoration:none}
-button,input{font:inherit}
-button{cursor:pointer;-webkit-appearance:none;appearance:none}
-#bar{height:38px;padding:0 14px;background:#0b0e13;border-bottom:1px solid #161c25;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-align:center;-webkit-align-items:center;align-items:center;white-space:nowrap;overflow:hidden}
-.dots{display:inline-block;white-space:nowrap;margin-right:8px}
-.dots i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
-.dots i:nth-child(1){background:#ff5f57}.dots i:nth-child(2){background:#febc2e}.dots i:nth-child(3){background:#28c840;margin-right:5px}
-#who{color:#3fb950}.sep{color:#4d5866;margin:0 6px}.path{color:#58a6ff}.grow{-webkit-box-flex:1;-webkit-flex:1;flex:1;min-width:4px}
-.badge{border:1px solid #1d4428;color:#3fb950;border-radius:3px;padding:3px 7px;font-size:9px;letter-spacing:1px;text-transform:uppercase}
-#bar-date{color:#7d8896;margin-left:10px;font-size:10px}
-#main{max-width:1300px;margin:0 auto;padding:12px;display:-webkit-box;display:-webkit-flex;display:flex;gap:12px}
-#left{width:33%;min-width:0;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-orient:vertical;-webkit-flex-direction:column;flex-direction:column;gap:12px}
-#right{-webkit-box-flex:1;-webkit-flex:1;flex:1;min-width:0;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-orient:vertical;-webkit-flex-direction:column;flex-direction:column;gap:12px}
-.panel{background:#0d1117;border:1px solid #1a212c;border-radius:7px;padding:13px 14px;min-width:0;overflow:hidden}
-.ttl{font-size:10px;letter-spacing:1.4px;color:#4d5866;margin-bottom:10px;text-transform:lowercase}
-.ttl .sl{color:#2c3644;margin-right:5px}
-.meta{float:right;letter-spacing:.3px;color:#3d4754;font-size:9px}
-.clock{font-size:clamp(46px,7.5vw,80px);line-height:1;color:#e6edf3;letter-spacing:-4px;white-space:nowrap;font-weight:normal}
-.colon{color:#3fb950}.colon.off{color:#1d4428}
-.seconds{font-size:19px;color:#4d5866;vertical-align:top;display:inline-block;margin:5px 0 0 6px;letter-spacing:0}
-.date{color:#9aa5b1;margin-top:10px;font-size:12px}
-.epoch{color:#4d5866;font-size:10px;margin-top:3px}
-.quote{font-size:12px;color:#aab6c5;line-height:1.6;min-height:38px}
-.quote b{color:#3fb950;font-weight:normal}
-.quicklinks{font-size:0}
-.link{display:inline-block;vertical-align:top;width:50%;padding:5px}
-.link a{display:block;border:1px solid #1c2633;background:#0a0e14;border-radius:5px;padding:9px 8px;min-height:53px}
-.link a:active,.action:active{background:#172232}
-.link strong{display:block;font-size:11px;font-weight:normal;color:#cbd5e1}
-.link small{display:block;color:#4d5866;font-size:9px;margin-top:3px}
-.link .sym{color:#3fb950;margin-right:5px}
-.heat-wrap{overflow:hidden}
-.heat{white-space:nowrap;font-size:0;overflow:hidden}
-.wk{display:inline-block;vertical-align:top;margin-right:3px}
-.wk i{display:block;width:clamp(6px,1.1vw,12px);height:clamp(6px,1.1vw,12px);margin-bottom:3px;border-radius:2px;background:#151b23}
-.wk i.l1{background:#0e4429}.wk i.l2{background:#006d32}.wk i.l3{background:#26a641}.wk i.l4{background:#39d353}.wk i.today{box-shadow:inset 0 0 0 1px #c3cbd6}
-.heatmonths{height:13px;color:#4d5866;font-size:9px;white-space:nowrap}
-.heatstats{display:-webkit-box;display:-webkit-flex;display:flex;border-top:1px solid #161c25;padding-top:9px;margin-top:7px}
-.heatstats div{-webkit-box-flex:1;-webkit-flex:1;flex:1}
-.heatstats b{display:block;font-size:19px;color:#e6edf3;font-weight:normal}
-.heatstats span{font-size:9px;color:#4d5866}
-.rows{margin-top:2px}
-.row{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-align:center;-webkit-align-items:center;align-items:center;margin:10px 0;gap:8px}
-.row .key{width:54px;color:#4d5866}
-.row .value{color:#9aa5b1;font-size:10px}
-.track{height:6px;background:#161c25;border-radius:3px;overflow:hidden;-webkit-box-flex:1;-webkit-flex:1;flex:1}
-.track i{display:block;height:100%;width:0;background:#58a6ff}
-.track i.purple{background:#bc8cff}
-.smallnote{font-size:9px;color:#3d4754;margin-top:8px}
-.taskrow{display:-webkit-box;display:-webkit-flex;display:flex;gap:7px;margin-bottom:7px;align-items:center}
-.taskrow input[type=checkbox]{width:14px;height:14px;accent-color:#3fb950;flex-shrink:0}
-.taskrow input[type=text]{min-width:0;width:100%;background:transparent;border:0;border-bottom:1px solid #1a212c;color:#c3cbd6;padding:5px 2px;outline:none;font-size:11px}
-.taskrow input[type=text]::-webkit-input-placeholder{color:#3d4754}
-.taskrow.done input[type=text]{color:#4d5866;text-decoration:line-through}
-.actions{display:-webkit-box;display:-webkit-flex;display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
-.action{border:1px solid #293545;background:#111925;color:#9aa5b1;padding:7px 9px;border-radius:4px;font-size:10px}
-.action.primary{color:#3fb950;border-color:#1d4428}
-.timer{font-size:36px;color:#e6edf3;letter-spacing:-1px;line-height:1.2;margin:6px 0 10px}
-.timer .colon{color:#3fb950}
-.timerhelp{font-size:10px;color:#4d5866}
-.timerline{height:3px;background:#161c25;margin:10px 0 12px;border-radius:3px;overflow:hidden}
-.timerline i{display:block;height:100%;width:100%;background:#3fb950}
-.footer{text-align:center;color:#303b49;font-size:9px;letter-spacing:1px;padding:3px 0 14px}
-#toast{position:fixed;left:50%;bottom:14px;-webkit-transform:translateX(-50%);transform:translateX(-50%);background:#172232;border:1px solid #293545;border-radius:5px;padding:8px 12px;color:#c3cbd6;font-size:11px;display:none;max-width:90%;z-index:5}
-@media (min-width:900px) and (orientation:landscape){
- #main{height:calc(100vh - 38px);max-height:900px}
- #left,#right{height:100%}
- #p-links{flex-shrink:0}
- #p-heat{flex-shrink:0}
- #p-tasks{-webkit-box-flex:1;-webkit-flex:1;flex:1}
- #p-commits{-webkit-box-flex:1;-webkit-flex:1;flex:1}
+* {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
 }
-@media (max-width:899px){
- #main{display:block;padding:9px}
- #left,#right{width:100%;display:block}
- #left .panel,#right .panel{margin-bottom:9px}
- .clock{font-size:clamp(58px,12vw,82px)}
- .link{width:50%}
- #p-heat .wk i{width:9px;height:9px}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: #101210;
+    color: #e0e5df;
+    font-family: Menlo, Monaco, "Courier New", monospace;
+    -webkit-text-size-adjust: 100%;
 }
-@media (orientation:portrait) and (max-width:899px){
- #p-clock{padding-bottom:15px}
- #p-clock .clock{font-size:68px}
- #p-heat .wk i{width:8px;height:8px}
+
+body {
+    padding: 14px 20px 10px;
 }
-@media (max-height:700px) and (orientation:landscape){
- #main{padding:8px;gap:8px}
- #left,#right{gap:8px}
- .panel{padding:9px 11px}
- .clock{font-size:54px}
- .date{margin-top:5px}
- .epoch{display:none}
- .ttl{margin-bottom:6px}
- .link a{min-height:43px;padding:6px}
- .link small{display:none}
- .heatstats{padding-top:5px;margin-top:4px}
- .heatstats b{font-size:16px}
- .row{margin:7px 0}
+
+#app {
+    height: 100%;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+}
+
+.topbar {
+    height: 43px;
+    min-height: 43px;
+    border-bottom: 1px solid #303830;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    color: #9da99c;
+    font-size: 15px;
+    letter-spacing: 1px;
+}
+
+.brand {
+    color: #b8e6a7;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.status {
+    color: #a9d99a;
+    font-size: 13px;
+}
+
+.status:before {
+    content: "● ";
+}
+
+#main {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+    min-height: 0;
+    padding: 15px 0 12px;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+}
+
+.left {
+    width: 43%;
+    min-width: 0;
+    padding-right: 20px;
+    border-right: 1px solid #303830;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+}
+
+.right {
+    width: 57%;
+    min-width: 0;
+    padding-left: 20px;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+}
+
+.label {
+    color: #82917f;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+}
+
+.clockbox {
+    padding: 8px 0 15px;
+    border-bottom: 1px solid #303830;
+}
+
+#clock {
+    font-size: 76px;
+    font-weight: bold;
+    line-height: 1.12;
+    letter-spacing: -4px;
+    color: #e4f2df;
+    white-space: nowrap;
+}
+
+#date {
+    margin-top: 7px;
+    color: #a4afa1;
+    font-size: 19px;
+}
+
+.stats {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    margin-top: 14px;
+}
+
+.stat {
+    width: 33.33%;
+    padding: 6px 7px 6px 0;
+}
+
+.stat-number {
+    font-size: 28px;
+    font-weight: bold;
+    color: #c1e9b2;
+}
+
+.stat-name {
+    font-size: 12px;
+    color: #899587;
+    margin-top: 4px;
+}
+
+.activity {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid #303830;
+}
+
+.activity-line {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #b7c0b3;
+}
+
+.green {
+    color: #b8e6a7;
+}
+
+.muted {
+    color: #7f8b7d;
+}
+
+.section {
+    min-height: 0;
+}
+
+.repo-section {
+    height: 59%;
+    min-height: 0;
+    border-bottom: 1px solid #303830;
+    padding-bottom: 10px;
+}
+
+.event-section {
+    height: 41%;
+    min-height: 0;
+    padding-top: 12px;
+}
+
+.repo {
+    padding: 9px 0;
+    border-bottom: 1px solid #252d25;
+}
+
+.repo-name {
+    color: #c5e9b7;
+    font-size: 18px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.repo-desc {
+    color: #9aa497;
+    font-size: 13px;
+    margin-top: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.repo-meta {
+    color: #7f8e7b;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.event {
+    padding: 6px 0;
+    color: #aab5a5;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.event strong {
+    color: #c5e9b7;
+    font-weight: normal;
+}
+
+.empty {
+    color: #7f8b7d;
+    font-size: 14px;
+    padding: 12px 0;
+    line-height: 1.6;
+}
+
+.footer {
+    min-height: 29px;
+    height: 29px;
+    border-top: 1px solid #303830;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    font-size: 11px;
+    color: #738071;
+}
+
+@media screen and (max-width: 700px) {
+    body {
+        padding: 8px;
+    }
+
+    .topbar {
+        font-size: 11px;
+    }
+
+    .brand {
+        font-size: 14px;
+    }
+
+    #clock {
+        font-size: 47px;
+        letter-spacing: -2px;
+    }
+
+    #date {
+        font-size: 13px;
+    }
+
+    .left {
+        padding-right: 10px;
+    }
+
+    .right {
+        padding-left: 10px;
+    }
+
+    .label {
+        font-size: 10px;
+    }
+
+    .repo-name {
+        font-size: 13px;
+    }
+
+    .repo-desc, .event {
+        font-size: 10px;
+    }
+
+    .repo-meta {
+        font-size: 9px;
+    }
+
+    .stat-number {
+        font-size: 19px;
+    }
+
+    .stat-name {
+        font-size: 9px;
+    }
+
+    .activity-line {
+        font-size: 10px;
+    }
 }
 </style>
 </head>
+
 <body>
-<div id="bar">
- <span class="dots"><i></i><i></i><i></i></span><span id="who">dev@ipad</span><span class="sep">:</span><span class="path">~/painel</span><span class="sep">$</span>
- <span class="grow"></span><span class="badge">local</span><span id="bar-date"></span>
+<div id="app">
+
+    <div class="topbar">
+        <div class="brand">[ PAINEL_DEV ]</div>
+        <div>FELIPEFRANCOO</div>
+        <div id="api-status" class="status">CONECTANDO</div>
+    </div>
+
+    <div id="main">
+        <div class="left">
+
+            <div class="clockbox">
+                <div class="label">HORÁRIO LOCAL</div>
+                <div id="clock">--:--:--</div>
+                <div id="date">Carregando data...</div>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <div id="repo-count" class="stat-number">--</div>
+                    <div class="stat-name">REPOSITÓRIOS</div>
+                </div>
+                <div class="stat">
+                    <div id="followers" class="stat-number">--</div>
+                    <div class="stat-name">SEGUIDORES</div>
+                </div>
+                <div class="stat">
+                    <div id="stars" class="stat-number">--</div>
+                    <div class="stat-name">ESTRELAS</div>
+                </div>
+            </div>
+
+            <div class="activity">
+                <div class="label">SISTEMA</div>
+                <div class="activity-line">
+                    <span class="green">●</span> Relógio local ativo
+                </div>
+                <div id="connection" class="activity-line">
+                    <span class="muted">●</span> Aguardando API do GitHub
+                </div>
+                <div id="updated" class="activity-line muted">
+                    Última atualização: --
+                </div>
+            </div>
+
+        </div>
+
+        <div class="right">
+
+            <div class="repo-section section">
+                <div class="label">REPOSITÓRIOS RECENTES</div>
+                <div id="repos">
+                    <div class="empty">Carregando projetos públicos...</div>
+                </div>
+            </div>
+
+            <div class="event-section section">
+                <div class="label">ATIVIDADE PÚBLICA RECENTE</div>
+                <div id="events">
+                    <div class="empty">Consultando atividade...</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="footer">
+        <div>DEV MONITOR / STATIC MODE</div>
+        <div>GITHUB REST API</div>
+        <div id="footer-time">SYNC --:--</div>
+    </div>
+
 </div>
-<div id="main">
- <div id="left">
-  <section class="panel" id="p-clock">
-   <div class="ttl"><span class="sl">//</span>agora <span class="meta">hora local</span></div>
-   <div class="clock"><span id="hh">00</span><span id="colon" class="colon">:</span><span id="mm">00</span><span class="seconds" id="ss">00</span></div>
-   <div class="date" id="date">carregando data...</div>
-   <div class="epoch">unix <span id="epoch">0</span></div>
-  </section>
-  <section class="panel" id="p-links">
-   <div class="ttl"><span class="sl">//</span>atalhos <span class="meta">toque para abrir</span></div>
-   <div class="quicklinks">
-    <div class="link"><a href="https://github.com/" target="_blank"><strong><span class="sym">↗</span>GitHub</strong><small>seus projetos</small></a></div>
-    <div class="link"><a href="https://github.com/trending" target="_blank"><strong><span class="sym">↑</span>Trending</strong><small>projetos em alta</small></a></div>
-    <div class="link"><a href="https://roadmap.sh/" target="_blank"><strong><span class="sym">⌁</span>Roadmap.sh</strong><small>trilhas dev</small></a></div>
-    <div class="link"><a href="https://developer.mozilla.org/" target="_blank"><strong><span class="sym">⌘</span>MDN Docs</strong><small>documentação web</small></a></div>
-    <div class="link"><a href="https://stackoverflow.com/" target="_blank"><strong><span class="sym">?</span>Stack Overflow</strong><small>dúvidas técnicas</small></a></div>
-    <div class="link"><a href="https://www.youtube.com/" target="_blank"><strong><span class="sym">♫</span>YouTube</strong><small>música e tutoriais</small></a></div>
-   </div>
-  </section>
-  <section class="panel" id="p-heat">
-   <div class="ttl"><span class="sl">//</span>atividade <span class="meta">visual ilustrativo</span></div>
-   <div class="heatmonths" id="months"></div>
-   <div class="heat-wrap"><div class="heat" id="heat"></div></div>
-   <div class="heatstats">
-    <div><b id="st-today">0</b><span>hoje</span></div>
-    <div><b id="st-week">0</b><span>7 dias</span></div>
-    <div><b id="st-streak">0</b><span>sequência</span></div>
-   </div>
-   <div class="smallnote">Heatmap decorativo — não representa seus commits reais.</div>
-  </section>
- </div>
- <div id="right">
-  <section class="panel" id="p-tasks">
-   <div class="ttl"><span class="sl">//</span>lista rápida <span class="meta" id="task-count">0 tarefas</span></div>
-   <div id="tasks"></div>
-   <div class="actions"><button class="action primary" id="add-task">+ nova tarefa</button><button class="action" id="clear-done">limpar concluídas</button></div>
-  </section>
-  <section class="panel" id="p-focus">
-   <div class="ttl"><span class="sl">//</span>modo foco <span class="meta">pomodoro</span></div>
-   <div class="timer" id="timer"><span id="tm">25</span><span class="colon">:</span><span id="ts">00</span></div>
-   <div class="timerline"><i id="timerbar"></i></div>
-   <div class="timerhelp" id="timerhelp">25 minutos para uma tarefa de cada vez.</div>
-   <div class="actions"><button class="action primary" id="start">▶ iniciar</button><button class="action" id="pause">Ⅱ pausar</button><button class="action" id="reset">↺ reiniciar</button><button class="action" id="short">5 min</button></div>
-  </section>
-  <section class="panel" id="p-note">
-   <div class="ttl"><span class="sl">//</span>scratchpad <span class="meta" id="save-status">salvo localmente</span></div>
-   <textarea id="note" placeholder="ideias, comandos, links ou lembretes..." style="display:block;width:100%;height:96px;background:#090d13;border:1px solid #1a212c;border-radius:4px;color:#c3cbd6;padding:10px;font:11px/1.6 Menlo,monospace;resize:vertical;outline:none;-webkit-user-select:text;user-select:text"></textarea>
-   <div class="smallnote">O texto fica neste navegador quando o armazenamento local está disponível.</div>
-  </section>
-  <section class="panel" id="p-status">
-   <div class="ttl"><span class="sl">//</span>status do painel <span class="meta">sem servidor</span></div>
-   <div class="row"><span class="key">relógio</span><div class="track"><i style="width:100%"></i></div><span class="value">ativo</span></div>
-   <div class="row"><span class="key">rede</span><div class="track"><i id="netbar" style="width:100%;background:#3fb950"></i></div><span class="value" id="net">verificando</span></div>
-   <div class="row"><span class="key">storage</span><div class="track"><i id="storebar" style="width:100%;background:#bc8cff"></i></div><span class="value" id="storage">verificando</span></div>
-   <div class="smallnote">Este painel não lê CPU/RAM do PC nem consulta o GitHub automaticamente. Ele funciona como página estática, ideal para hospedagem no GitHub Pages.</div>
-  </section>
- </div>
-</div>
-<div class="footer">PAINEL DEV · HTML + CSS + JAVASCRIPT · FEITO PARA SAFARI ANTIGO</div>
-<div id="toast"></div>
+
 <script>
-(function(){
-'use strict';
-var $=function(id){return document.getElementById(id);};
-var days=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
-var daysShort=['dom','seg','ter','qua','qui','sex','sáb'];
-var months=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-var monthsShort=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-function pad(n){return n<10?'0'+n:String(n);}
-function txt(id,v){if($(id).textContent!==String(v))$(id).textContent=String(v);}
-function dayKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
-function tick(){
- var d=new Date();
- txt('hh',pad(d.getHours()));txt('mm',pad(d.getMinutes()));txt('ss',pad(d.getSeconds()));
- $('colon').className=d.getSeconds()%2?'colon off':'colon';
- txt('date',days[d.getDay()]+', '+d.getDate()+' de '+months[d.getMonth()]+' de '+d.getFullYear());
- txt('epoch',Math.floor(d.getTime()/1000));
- txt('bar-date',daysShort[d.getDay()]+' '+pad(d.getDate())+' '+monthsShort[d.getMonth()]);
-}
-function clockLoop(){tick();setTimeout(clockLoop,1000-(new Date().getTime()%1000)+5);}
-function makeHeat(){
- var today=new Date(), weeks=17, start=new Date(today.getFullYear(),today.getMonth(),today.getDate()-today.getDay()-(weeks-1)*7);
- var html='',monthHtml='',lastMonth=-1,total=0,week=0,streak=0,afterToday=true;
- for(var w=0;w<weeks;w++){
-  var first=new Date(start.getFullYear(),start.getMonth(),start.getDate()+w*7);
-  if(first.getMonth()!==lastMonth){monthHtml+='<span style="display:inline-block;width:'+(w*15)+'px">'+monthsShort[first.getMonth()]+'</span>';lastMonth=first.getMonth();}
-  html+='<span class="wk">';
-  for(var d=0;d<7;d++){
-   var day=new Date(start.getFullYear(),start.getMonth(),start.getDate()+w*7+d),diff=Math.floor((new Date(today.getFullYear(),today.getMonth(),today.getDate())-day)/86400000);
-   var n=0;
-   if(day<=today){var seed=(day.getDate()*13+day.getMonth()*7+day.getFullYear())%11;n=(seed>4)?(seed%4)+1:0;}
-   if(diff===0)total=n;
-   if(diff>=0&&diff<7)week+=n;
-   if(diff===0&&n>0)streak=1;
-   else if(diff===0&&n===0)afterToday=false;
-   if(diff>0&&afterToday){if(n>0)streak++;else afterToday=false;}
-   var level=n===0?0:Math.min(4,n);
-   html+='<i class="l'+level+(diff===0?' today':'')+'" title="'+dayKey(day)+': '+n+'"></i>';
-  }
-  html+='</span>';
- }
- $('heat').innerHTML=html;$('months').innerHTML=monthHtml;
- txt('st-today',total);txt('st-week',week);txt('st-streak',streak);
-}
-function toast(msg){var t=$('toast');t.textContent=msg;t.style.display='block';setTimeout(function(){t.style.display='none';},1800);}
+(function () {
+    var username = "FelipeFrancoo";
+    var refreshMs = 15 * 60 * 1000;
 
-/* Tarefas com armazenamento local, compatível com Safari antigo */
-var tasks=[], nextId=1;
-function loadTasks(){
- try{var raw=localStorage.getItem('painelDevTasks');if(raw){var parsed=JSON.parse(raw);if(parsed&&parsed.length)tasks=parsed;}}
- catch(e){}
- if(!tasks.length){tasks=[{id:nextId++,text:'Personalizar os links do painel',done:false},{id:nextId++,text:'Escolher uma tarefa para hoje',done:false}];}
- for(var i=0;i<tasks.length;i++)if(tasks[i].id>=nextId)nextId=tasks[i].id+1;
- renderTasks();
-}
-function saveTasks(){try{localStorage.setItem('painelDevTasks',JSON.stringify(tasks));}catch(e){}}
-function renderTasks(){
- var html='',done=0;
- for(var i=0;i<tasks.length;i++){
-  if(tasks[i].done)done++;
-  html+='<div class="taskrow'+(tasks[i].done?' done':'')+'"><input type="checkbox" data-id="'+tasks[i].id+'" '+(tasks[i].done?'checked':'')+'><input type="text" data-text="'+tasks[i].id+'" value="'+escapeAttr(tasks[i].text)+'" placeholder="escreva uma tarefa"></div>';
- }
- if(!html)html='<div class="smallnote">Nenhuma tarefa. Adicione uma acima.</div>';
- $('tasks').innerHTML=html;txt('task-count',tasks.length+' tarefas · '+done+' feitas');
- var checks=$('tasks').getElementsByTagName('input');
- for(var j=0;j<checks.length;j++){
-  if(checks[j].type==='checkbox')checks[j].onchange=function(){var id=Number(this.getAttribute('data-id'));for(var k=0;k<tasks.length;k++)if(tasks[k].id===id)tasks[k].done=this.checked;saveTasks();renderTasks();};
-  else checks[j].onchange=checks[j].onblur=function(){var id=Number(this.getAttribute('data-text'));for(var k=0;k<tasks.length;k++)if(tasks[k].id===id)tasks[k].text=this.value;saveTasks();};
- }
-}
-function escapeAttr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-$('add-task').onclick=function(){tasks.push({id:nextId++,text:'',done:false});saveTasks();renderTasks();var inputs=$('tasks').getElementsByTagName('input');for(var i=inputs.length-1;i>=0;i--)if(inputs[i].type==='text'){inputs[i].focus();break;}};
-$('clear-done').onclick=function(){var keep=[];for(var i=0;i<tasks.length;i++)if(!tasks[i].done)keep.push(tasks[i]);tasks=keep;saveTasks();renderTasks();};
+    function byId(id) {
+        return document.getElementById(id);
+    }
 
-/* Pomodoro */
-var remaining=1500,totalTime=1500,interval=null;
-function renderTimer(){
- txt('tm',pad(Math.floor(remaining/60)));txt('ts',pad(remaining%60));
- $('timerbar').style.width=Math.max(0,remaining/totalTime*100)+'%';
-}
-function stopTimer(){if(interval){clearInterval(interval);interval=null;}}
-$('start').onclick=function(){if(interval)return;$('timerhelp').textContent='Foco ativo. Uma coisa de cada vez.';interval=setInterval(function(){if(remaining>0){remaining--;renderTimer();}else{stopTimer();$('timerhelp').textContent='Tempo concluído. Faça uma pequena pausa.';toast('Pomodoro concluído!');}},1000);};
-$('pause').onclick=function(){stopTimer();$('timerhelp').textContent='Temporizador pausado.';};
-$('reset').onclick=function(){stopTimer();if(totalTime===300)totalTime=1500;remaining=totalTime;renderTimer();$('timerhelp').textContent='Temporizador reiniciado.';};
-$('short').onclick=function(){stopTimer();remaining=300;totalTime=300;renderTimer();$('timerhelp').textContent='Modo pausa: 5 minutos.';};
+    function pad(n) {
+        return n < 10 ? "0" + n : String(n);
+    }
 
-/* Scratchpad */
-try{
- var note=$('note');note.value=localStorage.getItem('painelDevNote')||'';
- note.oninput=function(){try{localStorage.setItem('painelDevNote',note.value);txt('save-status','salvo');}catch(e){txt('save-status','não disponível');}};
-}catch(e){txt('save-status','indisponível');}
-try{localStorage.setItem('painelDevTest','1');localStorage.removeItem('painelDevTest');txt('storage','disponível');$('storebar').style.width='100%';}
-catch(e){txt('storage','bloqueado');$('storebar').style.width='20%';}
-function network(){var on=navigator.onLine!==false;txt('net',on?'online':'offline');$('netbar').style.width=on?'100%':'12%';$('netbar').style.background=on?'#3fb950':'#e3b341';}
-window.addEventListener('online',network,false);window.addEventListener('offline',network,false);
-network();loadTasks();makeHeat();clockLoop();
-})();
+    function updateClock() {
+        var d = new Date();
+        var days = [
+            "Domingo", "Segunda-feira", "Terça-feira",
+            "Quarta-feira", "Quinta-feira", "Sexta-feira",
+            "Sábado"
+        ];
+        var months = [
+            "janeiro", "fevereiro", "março", "abril",
+            "maio", "junho", "julho", "agosto",
+            "setembro", "outubro", "novembro", "dezembro"
+        ];
+
+        byId("clock").innerHTML =
+            pad(d.getHours()) + ":" +
+            pad(d.getMinutes()) + ":" +
+            pad(d.getSeconds());
+
+        byId("date").innerHTML =
+            days[d.getDay()] + ", " +
+            d.getDate() + " de " +
+            months[d.getMonth()];
+
+        byId("footer-time").innerHTML =
+            "SYNC " + pad(d.getHours()) + ":" + pad(d.getMinutes());
+    }
+
+    function request(url, callback) {
+        var xhr = new XMLHttpRequest();
+
+        try {
+            xhr.open("GET", url, true);
+            xhr.timeout = 12000;
+            xhr.setRequestHeader("Accept", "application/vnd.github+json");
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState !== 4) {
+                    return;
+                }
+
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        callback(null, JSON.parse(xhr.responseText));
+                    } catch (e) {
+                        callback("JSON inválido", null);
+                    }
+                } else {
+                    callback("HTTP " + xhr.status, null);
+                }
+            };
+
+            xhr.ontimeout = function () {
+                callback("Tempo esgotado", null);
+            };
+
+            xhr.onerror = function () {
+                callback("Falha de conexão", null);
+            };
+
+            xhr.send(null);
+        } catch (e) {
+            callback("Erro de conexão", null);
+        }
+    }
+
+    function safeText(value, fallback) {
+        if (value === null || value === undefined || value === "") {
+            return fallback;
+        }
+
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    function shortDate(value) {
+        if (!value) {
+            return "data indisponível";
+        }
+
+        var d = new Date(value);
+
+        if (isNaN(d.getTime())) {
+            return "data indisponível";
+        }
+
+        return pad(d.getDate()) + "/" +
+            pad(d.getMonth() + 1) + "/" +
+            d.getFullYear();
+    }
+
+    function relativeDate(value) {
+        if (!value) {
+            return "";
+        }
+
+        var then = new Date(value).getTime();
+
+        if (isNaN(then)) {
+            return "";
+        }
+
+        var hours = Math.floor((new Date().getTime() - then) / 3600000);
+
+        if (hours < 0) {
+            return shortDate(value);
+        }
+
+        if (hours < 1) {
+            return "há menos de 1 hora";
+        }
+
+        if (hours < 24) {
+            return "há " + hours + "h";
+        }
+
+        var days = Math.floor(hours / 24);
+
+        if (days < 30) {
+            return "há " + days + " dia(s)";
+        }
+
+        return shortDate(value);
+    }
+
+    function renderRepos(data) {
+        var html = "";
+        var totalStars = 0;
+        var i;
+        var r;
+
+        if (!data || !data.length) {
+            byId("repos").innerHTML =
+                '<div class="empty">Nenhum repositório público encontrado.</div>';
+            return;
+        }
+
+        for (i = 0; i < data.length; i++) {
+            r = data[i];
+            totalStars += r.stargazers_count || 0;
+
+            html += '<div class="repo">';
+            html += '<div class="repo-name">' +
+                safeText(r.name, "Projeto") + '</div>';
+            html += '<div class="repo-desc">' +
+                safeText(r.description, "Sem descrição") + '</div>';
+            html += '<div class="repo-meta">' +
+                safeText(r.language, "Linguagem não informada") +
+                ' &nbsp; / &nbsp; ★ ' +
+                (r.stargazers_count || 0) +
+                ' &nbsp; / &nbsp; PUSH ' +
+                shortDate(r.pushed_at) +
+                '</div>';
+            html += '</div>';
+        }
+
+        byId("repos").innerHTML = html;
+        byId("repo-count").innerHTML = data.length + "+";
+        byId("stars").innerHTML = totalStars;
+    }
+
+    function renderEvents(data) {
+        var html = "";
+        var shown = 0;
+        var i;
+        var e;
+        var repo;
+        var label;
+
+        if (!data || !data.length) {
+            byId("events").innerHTML =
+                '<div class="empty">Sem eventos públicos recentes.</div>';
+            return;
+        }
+
+        for (i = 0; i < data.length && shown < 3; i++) {
+            e = data[i];
+            repo = e.repo && e.repo.name ? e.repo.name : "repositório";
+            label = "";
+
+            if (e.type === "PushEvent") {
+                label = "Push em ";
+            } else if (e.type === "CreateEvent") {
+                label = "Criação em ";
+            } else if (e.type === "WatchEvent") {
+                label = "Estrela em ";
+            } else if (e.type === "IssuesEvent") {
+                label = "Issue em ";
+            } else if (e.type === "PullRequestEvent") {
+                label = "Pull request em ";
+            } else {
+                continue;
+            }
+
+            html += '<div class="event"><strong>' +
+                safeText(label, "") + '</strong>' +
+                safeText(repo, "repositório") +
+                '<br><span class="muted">' +
+                safeText(relativeDate(e.created_at), "") +
+                '</span></div>';
+
+            shown++;
+        }
+
+        if (!shown) {
+            html = '<div class="empty">Nenhum push ou evento relevante disponível.</div>';
+        }
+
+        byId("events").innerHTML = html;
+    }
+
+    function setStatus(text, connected) {
+        byId("api-status").innerHTML = text;
+        byId("api-status").style.color = connected ? "#a9d99a" : "#d8b17a";
+        byId("connection").innerHTML = connected
+            ? '<span class="green">●</span> API do GitHub conectada'
+            : '<span class="muted">●</span> API indisponível; tentando novamente';
+    }
+
+    function refresh() {
+        var profileDone = false;
+        var reposDone = false;
+        var eventsDone = false;
+        var success = false;
+
+        function finishOne() {
+            if (profileDone && reposDone && eventsDone) {
+                setStatus(success ? "API ONLINE" : "API OFFLINE", success);
+                byId("updated").innerHTML =
+                    "Última tentativa: " + pad(new Date().getHours()) +
+                    ":" + pad(new Date().getMinutes());
+            }
+        }
+
+        request("https://api.github.com/users/" + username, function (err, data) {
+            profileDone = true;
+
+            if (!err && data) {
+                success = true;
+                byId("repo-count").innerHTML = data.public_repos;
+                byId("followers").innerHTML = data.followers;
+            }
+
+            finishOne();
+        });
+
+        request("https://api.github.com/users/" + username +
+            "/repos?sort=pushed&per_page=4", function (err, data) {
+            reposDone = true;
+
+            if (!err && data) {
+                success = true;
+                renderRepos(data);
+            } else {
+                byId("repos").innerHTML =
+                    '<div class="empty">Não foi possível carregar os projetos.</div>';
+            }
+
+            finishOne();
+        });
+
+        request("https://api.github.com/users/" + username +
+            "/events/public?per_page=10", function (err, data) {
+            eventsDone = true;
+
+            if (!err && data) {
+                success = true;
+                renderEvents(data);
+            } else {
+                byId("events").innerHTML =
+                    '<div class="empty">Atividade indisponível no momento.</div>';
+            }
+
+            finishOne();
+        });
+    }
+
+    updateClock();
+    window.setInterval(updateClock, 1000);
+
+    refresh();
+    window.setInterval(refresh, refreshMs);
+}());
 </script>
 </body>
 </html>
