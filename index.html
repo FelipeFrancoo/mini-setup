@@ -11,8 +11,8 @@
 <!--
   Painel para iPad mini 1 (iOS 9.3.5 / Safari 9) — 1024 x 768 em paisagem.
   JS em ES5 puro; CSS sem grid, sem variáveis, sem vh.
-  Tudo é calculado no próprio iPad (relógio, calendário, lua, sol, unix, binário),
-  exceto BTC/ETH, que vêm de data.js publicado pela GitHub Action no mesmo site.
+  Tudo é calculado no próprio iPad (relógio, calendário, lua, sol, binário),
+  sem nenhuma dependência de internet (o iOS 9 não abre as APIs atuais).
 -->
 <style>
   * { margin: 0; padding: 0; -webkit-box-sizing: border-box; box-sizing: border-box; }
@@ -54,15 +54,9 @@
   .num { font-variant-numeric: tabular-nums; -webkit-font-feature-settings: "tnum"; font-feature-settings: "tnum"; }
   .mono { font-family: Menlo, Courier, monospace; }
 
-  /* ---------- topo: status + cripto ---------- */
+  /* ---------- topo ---------- */
   #top { height: 30px; }
-  #status { color: #545d68; font-size: 12px; }
-  .coin { margin-left: 30px; -webkit-align-items: baseline; align-items: baseline; }
-  .coin .sym { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; margin-right: 8px; }
-  .coin .sym.btc { color: #f7931a; } .coin .sym.eth { color: #8c8cff; }
-  .coin .px { font-size: 19px; font-weight: 400; color: #fff; }
-  .coin .chg { font-size: 13px; margin-left: 8px; font-weight: 500; color: #7d8590; }
-  .chg.up { color: #3fb950; } .chg.down { color: #f85149; }
+  #status { color: #3a4048; font-size: 11px; }
 
   /* ---------- corpo ---------- */
   #main { height: 612px; margin-top: 14px; }
@@ -76,9 +70,7 @@
     white-space: nowrap; -webkit-flex-shrink: 0; flex-shrink: 0;
     font-size: 188px; line-height: 1; font-weight: 100; letter-spacing: -6px; color: #fff;
   }
-  #clock .colon { display: inline-block; margin: 0 2px; position: relative; top: -12px;
-    -webkit-transition: opacity .25s; transition: opacity .25s; }
-  #clock .colon.dim { opacity: .25; }
+  #clock .colon { display: inline-block; margin: 0 2px; position: relative; top: -12px; opacity: .55; }
   #secs { font-size: 34px; font-weight: 200; color: #39d353; margin: 30px 0 0 14px; letter-spacing: 0; }
   #date { font-size: 30px; font-weight: 300; color: #d6dbe0; margin-top: 4px; }
   #date span { color: #7d8590; }
@@ -115,14 +107,14 @@
     background: rgba(255,255,255,0.035);
     border: 1px solid rgba(255,255,255,0.07);
   }
-  .sep { height: 1px; background: rgba(255,255,255,.07); margin: 18px 0; }
+  .sep { height: 1px; background: rgba(255,255,255,.07); }
 
   /* calendário */
   #calHead { margin-bottom: 10px; }
   #calMonth { font-size: 17px; color: #fff; font-weight: 500; text-transform: capitalize; }
   .cw { width: 47px; text-align: center; }
   .dow { font-size: 11px; color: #545d68; font-weight: 600; letter-spacing: 1px; height: 22px; line-height: 22px; }
-  .cd { height: 30px; line-height: 30px; font-size: 15px; color: #aeb5bd; }
+  .cd { height: 32px; line-height: 32px; font-size: 15px; color: #aeb5bd; }
   .cd.out { color: #30363d; }
   .cd.we { color: #7d8590; }
   .cd.today span { display: inline-block; width: 30px; height: 30px; line-height: 30px; border-radius: 15px;
@@ -140,10 +132,6 @@
   .stat .v { font-size: 26px; font-weight: 300; color: #fff; line-height: 1.1; }
   .stat .k { font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; color: #7d8590; margin-top: 5px; }
 
-  /* unix */
-  #unix { font-size: 31px; color: #39d353; margin-top: 8px; letter-spacing: 1px; }
-  #unixHex { font-size: 12px; color: #545d68; margin-top: 4px; }
-
   #rotate {
     display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #0a0c0f;
     color: #aeb5bd; font-size: 22px; text-align: center; padding-top: 45%;
@@ -157,9 +145,7 @@
 <body>
 <div id="stage">
   <div id="top" class="row center">
-    <div id="status" class="grow">v3 · iniciando…</div>
-    <div class="coin row" id="coinBtc"><span class="sym btc">BTC</span><span class="px num" id="btcPx">—</span><span class="chg num" id="btcChg"></span></div>
-    <div class="coin row" id="coinEth"><span class="sym eth">ETH</span><span class="px num" id="ethPx">—</span><span class="chg num" id="ethChg"></span></div>
+    <div id="status" class="grow">v4</div>
   </div>
 
   <div id="main" class="row">
@@ -191,9 +177,11 @@
     </div>
 
     <!-- DIREITA -->
-    <div id="card" class="col">
-      <div id="calHead" class="row between center"><span id="calMonth"></span><span class="label" id="calYear"></span></div>
-      <div id="cal"></div>
+    <div id="card" class="col between">
+      <div>
+        <div id="calHead" class="row between center"><span id="calMonth"></span><span class="label" id="calYear"></span></div>
+        <div id="cal"></div>
+      </div>
 
       <div class="sep"></div>
       <div class="row center">
@@ -211,10 +199,6 @@
         <div class="stat"><div class="v num" id="sunLen">--</div><div class="k">Luz do dia</div></div>
       </div>
 
-      <div class="sep"></div>
-      <div class="row between"><span class="label">Unix time</span><span class="label" id="unixLbl">epoch</span></div>
-      <div id="unix" class="mono num">----------</div>
-      <div id="unixHex" class="mono">0x--------</div>
     </div>
   </div>
 
@@ -229,14 +213,11 @@
 var CONFIG = {
   nome: 'Felipe',
   lat: -17.88, lon: -51.72,          // para nascer/pôr do sol e lado da lua (sul)
-  moeda: 'brl',                       // 'brl' ou 'usd' para BTC/ETH
   noiteInicio: 0, noiteFim: 6, noiteOpacidade: 0.55
 };
 (function () {
   var n = /[?&]nome=([^&#]+)/.exec(location.search);
   if (n) CONFIG.nome = decodeURIComponent(n[1]);
-  var m = /[?&]moeda=(brl|usd)/.exec(location.search);
-  if (m) CONFIG.moeda = m[1];
 })();
 
 /* ---------------- utilidades (ES5) ---------------- */
@@ -408,10 +389,6 @@ function tick() {
   var d = new Date();
   var h = d.getHours(), mi = d.getMinutes(), s = d.getSeconds();
   $('secs').innerHTML = pad(s);
-  $('colon').className = 'colon' + (s % 2 ? ' dim' : '');
-  var unix = Math.floor(d.getTime() / 1000);
-  $('unix').innerHTML = unix;
-  $('unixHex').innerHTML = '0x' + unix.toString(16).toUpperCase();
   renderBin(h, mi, s);
 
   if (mi !== lastMin) {
@@ -446,71 +423,14 @@ function tick() {
 
     if (d.getDate() !== lastDay) { lastDay = d.getDate(); renderCal(d); renderSun(d); }
     if (mi % 10 === 0 || !$('moonSvg').innerHTML) renderMoon(d);
-    if (cryptoAt) showCryptoStatus();
     if (h === 4 && mi === 0) setTimeout(function () { location.reload(); }, 5000);
   }
 }
 
-/* ---------------- BTC / ETH ----------------
-   O iOS 9 não abre as APIs de cripto direto (certificados novos). A GitHub Action
-   publica data.js no MESMO site; carregamos como tag script (o jeito mais
-   compatível com Safari antigo) e guardamos o último valor no aparelho. */
-var cryptoAt = null, cryptoErr = '';
-function fmtPx(v) {
-  if (v === null || v === undefined) return '—';
-  var pre = CONFIG.moeda === 'usd' ? 'US$ ' : 'R$ ';
-  return pre + milhar(Math.round(v));
-}
-function fmtChg(el, c) {
-  if (c === null || c === undefined) { el.innerHTML = ''; el.className = 'chg num'; return; }
-  el.innerHTML = (c >= 0 ? '▲ ' : '▼ ') + Math.abs(c).toFixed(1).replace('.', ',') + '%';
-  el.className = 'chg num ' + (c >= 0 ? 'up' : 'down');
-}
-function renderCrypto(d) {
-  var k = CONFIG.moeda;
-  if (d.btc) { $('btcPx').innerHTML = fmtPx(d.btc[k]); fmtChg($('btcChg'), d.btc.chg); }
-  if (d.eth) { $('ethPx').innerHTML = fmtPx(d.eth[k]); fmtChg($('ethChg'), d.eth.chg); }
-  cryptoAt = new Date(d.at);
-  showCryptoStatus();
-}
-function showCryptoStatus() {
-  var txt = 'v3';
-  if (cryptoAt) {
-    var min = Math.round((new Date() - cryptoAt) / 60000);
-    txt += ' · cotação de ' + hm(cryptoAt) + (min > 90 ? ' (desatualizada)' : '');
-  }
-  if (cryptoErr) txt += ' · ' + cryptoErr;
-  $('status').innerHTML = txt;
-}
-function loadCrypto() {
-  var old = $('dataScript');
-  if (old) old.parentNode.removeChild(old);
-  window.PAINEL_DATA = null;
-  var s = document.createElement('script');
-  s.id = 'dataScript';
-  s.src = 'data.js?t=' + new Date().getTime();
-  s.onload = function () {
-    var d = window.PAINEL_DATA;
-    if (!d || !d.crypto) { cryptoErr = 'data.js sem cotação'; showCryptoStatus(); return; }
-    cryptoErr = '';
-    renderCrypto(d.crypto);
-    try { localStorage.setItem('painelCrypto', JSON.stringify(d.crypto)); } catch (e) {}
-  };
-  s.onerror = function () { cryptoErr = 'sem acesso a data.js'; showCryptoStatus(); };
-  document.body.appendChild(s);
-}
-(function () {
-  try {
-    var c = localStorage.getItem('painelCrypto');
-    if (c) renderCrypto(JSON.parse(c));
-  } catch (e) {}
-})();
 
 /* ---------------- start ---------------- */
 setInterval(tick, 1000);
 tick();
-loadCrypto();
-setInterval(loadCrypto, 5 * 60 * 1000);
 </script>
 </body>
 </html>

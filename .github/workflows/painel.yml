@@ -1,12 +1,9 @@
 name: Painel
 
-# Busca cotação de BTC/ETH a cada 15 min e publica index.html + data.js no Pages.
-# Requer: Settings → Pages → Build and deployment → Source: "GitHub Actions".
-# Não cria commits (não polui seu gráfico de contribuições).
+# Publica index.html no GitHub Pages a cada push na main.
+# (Settings → Pages → Source: "GitHub Actions")
 
 on:
-  schedule:
-    - cron: '*/15 * * * *'
   push:
     branches: [main]
   workflow_dispatch:
@@ -29,12 +26,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Gerar data.js (BTC/ETH)
-        run: node scripts/build-data.mjs
+      - name: Montar site
+        run: mkdir -p _site && cp index.html _site/
 
       - uses: actions/configure-pages@v5
 
