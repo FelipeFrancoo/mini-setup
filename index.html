@@ -186,7 +186,7 @@
 
       <div>
         <div id="weather" class="row">
-          <svg id="wIcon" viewBox="0 0 64 64"></svg>
+          <div id="wIcon"></div>
           <div id="wTemp" class="num">--°</div>
           <div id="wInfo">
             <div id="wDesc">carregando clima…</div>
@@ -234,23 +234,17 @@
 
 <script>
 /* =====================================================================
-   CONFIGURAÇÃO — edite aqui (ou use ?user=SEU_USUARIO na URL)
+   CONFIGURAÇÃO — edite aqui (ou use ?nome=SeuNome na URL)
    ===================================================================== */
 var CONFIG = {
-  githubUser: 'FelipeFrancoo',
   nome: 'Felipe',
   cidade: 'Jataí',
-  lat: -17.88, lon: -51.72,
-  timezone: 'America/Sao_Paulo',
-  githubToken: '',          // opcional (token só-leitura). Sem token: 60 req/hora, suficiente.
-  repoLimit: 4,             // quantos repositórios recentes consultar
   semanasHeatmap: 20,
   noiteInicio: 0, noiteFim: 6, noiteOpacidade: 0.55   // escurece a tela à noite
 };
+// usuário do GitHub, cidade do clima e coordenadas ficam em .github/workflows/painel.yml
 
 (function () {
-  var m = /[?&]user=([^&#]+)/.exec(location.search);
-  if (m) CONFIG.githubUser = decodeURIComponent(m[1]);
   var n = /[?&]nome=([^&#]+)/.exec(location.search);
   if (n) CONFIG.nome = decodeURIComponent(n[1]);
 })();
@@ -310,11 +304,6 @@ function getJSON(url, cb, headers) {
   x.send();
 }
 
-function ghHeaders() {
-  var h = { 'Accept': 'application/vnd.github+json' };
-  if (CONFIG.githubToken) h.Authorization = 'token ' + CONFIG.githubToken;
-  return h;
-}
 
 /* ---------------- escala do palco (sem rolagem) ---------------- */
 function fit() {
@@ -413,25 +402,20 @@ function icon(kind, night) {
   }
   return cloud;
 }
-function loadWeather() {
-  var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + CONFIG.lat + '&longitude=' + CONFIG.lon +
-    '&current=temperature_2m,apparent_temperature,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max' +
-    '&timezone=' + encodeURIComponent(CONFIG.timezone) + '&forecast_days=1';
-  getJSON(url, function (err, d) {
-    if (err || !d.current) { $('wDesc').innerHTML = 'clima indisponível'; return; }
-    var c = d.current, w = WMO[c.weather_code] || ['—', 'cloud'];
-    $('wTemp').innerHTML = Math.round(c.temperature_2m) + '°';
-    $('wDesc').innerHTML = w[0];
-    $('wIcon').innerHTML = icon(w[1], c.is_day === 0);
-    var dl = d.daily;
-    $('wMinMax').innerHTML = 'máx <b>' + Math.round(dl.temperature_2m_max[0]) + '°</b> · mín <b>' +
-      Math.round(dl.temperature_2m_min[0]) + '°</b> · chuva <b>' + (dl.precipitation_probability_max[0] || 0) + '%</b>';
-  });
+function renderWeather(c) {
+  if (!c) { $('wDesc').innerHTML = 'clima indisponível'; return; }
+  var w = WMO[c.code] || ['—', 'cloud'];
+  $('wTemp').innerHTML = Math.round(c.temp) + '°';
+  $('wDesc').innerHTML = w[0];
+  $('wIcon').innerHTML = '<svg width="64" height="64" viewBox="0 0 64 64">' + icon(w[1], !c.isDay) + '</svg>';
+  $('wMinMax').innerHTML = 'máx <b>' + Math.round(c.max) + '°</b> · mín <b>' +
+    Math.round(c.min) + '°</b> · chuva <b>' + (c.rain || 0) + '%</b>';
 }
 
 /* ---------------- GitHub ---------------- */
 var ghLastOk = null;
 var commitList = [];
+var heatToday = null;
 
 function refreshCommitTimes() {
   var els = document.querySelectorAll('.cm .when');
@@ -447,7 +431,7 @@ function renderCommits() {
     var fresh = (now - c.date) < 3600000;
     html += '<div class="cm' + (fresh ? ' new' : '') + '"><div class="msg">' + esc(c.msg) + '</div>' +
       '<div class="meta"><span class="repo">' + esc(c.repo) + '</span> · <span class="when" data-t="' + c.date.getTime() + '">' +
-      tempoAtras(c.date) + '</span><span class="sha">' + c.sha + '</span></div></div>';
+      tempoAtras(c.date) + '</span><span class="sha">' + esc(c.sha) + '</span></div></div>';
   }
   box.innerHTML = html;
 }
@@ -459,126 +443,93 @@ function updateTodayCount() {
   $('sToday').innerHTML = n;
 }
 
-// 1) eventos públicos -> repositórios com push recente; 2) commits de cada um
-function loadGitHub() {
-  var u = CONFIG.githubUser;
-  if (!u || u === 'SEU_USUARIO_GITHUB') {
-    $('ghSub').innerHTML = 'defina CONFIG.githubUser';
-    $('commits').innerHTML = '<div class="empty">Edite <b>githubUser</b> no arquivo ou abra com <b>?user=seu_usuario</b> na URL.</div>';
-    setStatus(false, 'GitHub não configurado');
-    return;
+function renderHeat(contrib) {
+  if (!contrib || !contrib.days || !contrib.days.length) { $('heatEmpty').style.display = 'block'; return; }
+  $('heatEmpty').style.display = 'none';
+  var map = {}, list = contrib.days;
+  for (var i = 0; i < list.length; i++) map[list[i].date] = list[i];
+
+  var today = new Date(); today.setHours(12, 0, 0, 0);
+  var todayKey = ymd(today);
+  heatToday = map[todayKey] ? map[todayKey].count : 0;
+
+  // sequência: dias seguidos com contribuição (hoje ainda vazio não quebra)
+  var streak = 0, cur = new Date(today.getTime());
+  if (!map[todayKey] || !map[todayKey].count) cur.setDate(cur.getDate() - 1);
+  while (map[ymd(cur)] && map[ymd(cur)].count > 0) { streak++; cur.setDate(cur.getDate() - 1); }
+  $('sStreak').innerHTML = streak + '<span style="font-size:15px;color:#7d8590"> d</span>';
+  $('sYear').innerHTML = fmtNum(contrib.total || 0);
+
+  var weeks = CONFIG.semanasHeatmap;
+  var start = new Date(today.getTime());
+  start.setDate(start.getDate() - today.getDay() - (weeks - 1) * 7);
+  var html = '';
+  for (var w = 0; w < weeks; w++) {
+    html += '<div class="wk">';
+    for (var dd = 0; dd < 7; dd++) {
+      var day = new Date(start.getTime()); day.setDate(start.getDate() + w * 7 + dd);
+      var key = ymd(day), cls = 'c';
+      if (day > today) cls += ' fut';
+      else {
+        var it = map[key];
+        if (it && it.level) cls += ' l' + it.level;
+        if (key === todayKey) cls += ' today';
+      }
+      html += '<div class="' + cls + '"></div>';
+    }
+    html += '</div>';
   }
-  $('ghUser').innerHTML = '@' + esc(u);
-  $('avatar').style.backgroundImage = 'url(https://github.com/' + encodeURIComponent(u) + '.png?size=92)';
-
-  getJSON('https://api.github.com/users/' + encodeURIComponent(u) + '/events/public?per_page=60', function (err, events) {
-    var repos = [], seen = {};
-    if (!err && events && events.length) {
-      for (var i = 0; i < events.length && repos.length < CONFIG.repoLimit; i++) {
-        var ev = events[i];
-        if ((ev.type === 'PushEvent' || ev.type === 'CreateEvent') && ev.repo && !seen[ev.repo.name]) {
-          seen[ev.repo.name] = 1; repos.push(ev.repo.name);
-        }
-      }
-    }
-    if (err === 403) { setStatus(false, 'limite da API do GitHub atingido — tentando mais tarde'); return; }
-    if (repos.length) fetchCommits(repos);
-    else {
-      // sem eventos recentes: usa os repositórios com push mais recente
-      getJSON('https://api.github.com/users/' + encodeURIComponent(u) + '/repos?sort=pushed&per_page=' + CONFIG.repoLimit, function (e2, list) {
-        if (e2 || !list) { setStatus(false, 'sem conexão com o GitHub (' + (err || e2) + ')'); return; }
-        var r = [];
-        for (var j = 0; j < list.length; j++) r.push(list[j].full_name);
-        fetchCommits(r);
-      }, ghHeaders());
-    }
-  }, ghHeaders());
+  $('heatGrid').innerHTML = html;
 }
 
-function fetchCommits(repos) {
-  var u = CONFIG.githubUser, pending = repos.length, all = [], erros = 0;
-  if (!pending) { commitList = []; renderCommits(); return; }
-  for (var i = 0; i < repos.length; i++) (function (repo) {
-    getJSON('https://api.github.com/repos/' + repo + '/commits?per_page=10&author=' + encodeURIComponent(u), function (err, list) {
-      if (err) erros++;
-      else for (var k = 0; k < list.length; k++) {
-        var c = list[k], cc = c.commit || {};
-        var when = (cc.committer && cc.committer.date) || (cc.author && cc.author.date);
-        all.push({
-          repo: repo.split('/')[1], msg: (cc.message || '').split('\n')[0],
-          date: parseISO(when), sha: (c.sha || '').substr(0, 7)
-        });
-      }
-      if (--pending === 0) {
-        all.sort(function (a, b) { return b.date - a.date; });
-        commitList = all;
-        renderCommits();
-        updateTodayCount();
-        ghLastOk = new Date();
-        $('ghAgo').innerHTML = 'agora';
-        $('ghSub').innerHTML = repos.length + ' repositório' + (repos.length > 1 ? 's' : '') + ' ativo' + (repos.length > 1 ? 's' : '');
-        if (erros === repos.length) setStatus(false, 'falha ao buscar commits');
-        else setStatus(true, 'online · atualizado às ' + pad(ghLastOk.getHours()) + ':' + pad(ghLastOk.getMinutes()));
-      }
-    }, ghHeaders());
-  })(repos[i]);
+/* ---------------- dados (data.json gerado pela GitHub Action) ----------------
+   O Safari do iOS 9 não aceita os certificados atuais de api.github.com e
+   api.open-meteo.com. A Action busca tudo a cada 15 min e publica data.json
+   junto com esta página, no mesmo endereço do GitHub Pages. */
+var avatarSet = false;
+function renderAll(d) {
+  if (d.user) {
+    $('ghUser').innerHTML = '@' + esc(d.user.login);
+    if (d.user.avatar && !avatarSet) { $('avatar').style.backgroundImage = 'url(' + d.user.avatar + ')'; avatarSet = true; }
+  }
+  commitList = [];
+  var cs = d.commits || [];
+  for (var i = 0; i < cs.length; i++) {
+    commitList.push({ repo: cs[i].repo, msg: cs[i].msg, sha: cs[i].sha, date: parseISO(cs[i].date) });
+  }
+  var nr = d.activeRepos || 0;
+  $('ghSub').innerHTML = nr ? nr + ' repositório' + (nr > 1 ? 's' : '') + ' ativo' + (nr > 1 ? 's' : '') : 'GitHub';
+  renderCommits();
+  renderHeat(d.contributions);
+  updateTodayCount();
+  renderWeather(d.weather);
+
+  ghLastOk = parseISO(d.generatedAt);
+  $('ghAgo').innerHTML = tempoAtras(ghLastOk);
+  var idade = new Date() - ghLastOk;
+  if (idade > 2 * 3600000) setStatus(false, 'dados desatualizados · ' + tempoAtras(ghLastOk));
+  else setStatus(true, 'online · dados de ' + pad(ghLastOk.getHours()) + ':' + pad(ghLastOk.getMinutes()));
 }
 
-/* mapa de contribuições (API pública não-oficial, sem token) */
-var heatToday = null;
-function loadHeatmap() {
-  var u = CONFIG.githubUser;
-  if (!u || u === 'SEU_USUARIO_GITHUB') return;
-  getJSON('https://github-contributions-api.jogruber.de/v4/' + encodeURIComponent(u) + '?y=last', function (err, d) {
-    if (err || !d || !d.contributions) { $('heatEmpty').style.display = 'block'; return; }
-    $('heatEmpty').style.display = 'none';
-    var map = {}, list = d.contributions;
-    for (var i = 0; i < list.length; i++) map[list[i].date] = list[i];
-
-    var today = new Date(); today.setHours(12, 0, 0, 0);
-    var todayKey = ymd(today);
-    heatToday = map[todayKey] ? map[todayKey].count : 0;
-
-    // sequência: conta dias seguidos com contribuição (hoje vazio não quebra)
-    var streak = 0, cur = new Date(today.getTime());
-    if (!map[todayKey] || !map[todayKey].count) cur.setDate(cur.getDate() - 1);
-    while (map[ymd(cur)] && map[ymd(cur)].count > 0) { streak++; cur.setDate(cur.getDate() - 1); }
-    $('sStreak').innerHTML = streak + '<span style="font-size:15px;color:#7d8590"> d</span>';
-
-    var yr = d.total && d.total.lastYear !== undefined ? d.total.lastYear : 0;
-    if (!yr) for (var t = 0; t < list.length; t++) yr += list[t].count;
-    $('sYear').innerHTML = fmtNum(yr);
-
-    // grade: colunas = semanas (dom→sáb), última coluna = semana atual
-    var weeks = CONFIG.semanasHeatmap;
-    var start = new Date(today.getTime());
-    start.setDate(start.getDate() - today.getDay() - (weeks - 1) * 7);
-    var html = '';
-    for (var w = 0; w < weeks; w++) {
-      html += '<div class="wk">';
-      for (var dd = 0; dd < 7; dd++) {
-        var day = new Date(start.getTime()); day.setDate(start.getDate() + w * 7 + dd);
-        var key = ymd(day), cls = 'c';
-        if (day > today) cls += ' fut';
-        else {
-          var it = map[key];
-          if (it && it.level) cls += ' l' + it.level;
-          if (key === todayKey) cls += ' today';
-        }
-        html += '<div class="' + cls + '"></div>';
+var carregouUmaVez = false;
+function loadData() {
+  getJSON('data.json?t=' + new Date().getTime(), function (err, d) {
+    if (err || !d) {
+      setStatus(false, carregouUmaVez ? 'sem conexão · mostrando últimos dados' : 'data.json indisponível (' + err + ')');
+      if (!carregouUmaVez) {
+        $('commits').innerHTML = '<div class="empty">Ainda não há data.json. Rode a Action "Painel" no GitHub.</div>';
+        $('wDesc').innerHTML = 'clima indisponível';
       }
-      html += '</div>';
+      return;
     }
-    $('heatGrid').innerHTML = html;
-    updateTodayCount();
+    carregouUmaVez = true;
+    renderAll(d);
   });
 }
 
-/* ---------------- agenda de atualizações ---------------- */
-loadWeather(); loadGitHub(); loadHeatmap();
-setInterval(loadWeather, 30 * 60 * 1000);   // 30 min
-setInterval(loadGitHub, 10 * 60 * 1000);    // 10 min  (~30 req/h, limite é 60)
-setInterval(loadHeatmap, 60 * 60 * 1000);   // 1 h
+/* ---------------- agenda ---------------- */
+loadData();
+setInterval(loadData, 5 * 60 * 1000);   // o arquivo é local ao site: barato e sem limite de API
 </script>
 </body>
 </html>
