@@ -1,6 +1,6 @@
 name: Painel
 
-# Busca GitHub + clima a cada 15 min e publica index.html + data.json no Pages.
+# Busca cotação de BTC/ETH a cada 15 min e publica index.html + data.js no Pages.
 # Requer: Settings → Pages → Build and deployment → Source: "GitHub Actions".
 # Não cria commits (não polui seu gráfico de contribuições).
 
@@ -33,15 +33,8 @@ jobs:
         with:
           node-version: 22
 
-      - name: Gerar data.json
+      - name: Gerar data.js (BTC/ETH)
         run: node scripts/build-data.mjs
-        env:
-          GH_USER: FelipeFrancoo
-          LAT: '-17.88'
-          LON: '-51.72'
-          TZ_NAME: America/Sao_Paulo
-          # Opcional: crie o secret GH_PAT (token só-leitura) para incluir contribuições privadas no mapa.
-          GITHUB_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
       - uses: actions/configure-pages@v5
 
