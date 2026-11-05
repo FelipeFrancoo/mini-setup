@@ -1,743 +1,584 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Painel Dev</title>
-
+<meta name="apple-mobile-web-app-title" content="Painel">
+<meta name="format-detection" content="telephone=no">
+<title>Painel</title>
+<!--
+  Painel para iPad mini 1 (iOS 9.3.5 / Safari 9)
+  - Tela: 1024 x 768 pontos em paisagem (não-retina, 163 ppi)
+  - JS escrito em ES5 puro (sem let/const, arrow, fetch, Intl, template strings)
+  - CSS sem grid, sem variáveis, sem vh (bugado no iOS 9)
+  - O "palco" tem 1024x768 fixos e é escalado para caber em qualquer janela,
+    então nunca há rolagem, com ou sem a barra do Safari.
+-->
 <style>
-* {
-    box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-}
-
-html, body {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background: #101210;
-    color: #e0e5df;
-    font-family: Menlo, Monaco, "Courier New", monospace;
+  * { margin: 0; padding: 0; -webkit-box-sizing: border-box; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #07080a; color: #e8eaed;
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
     -webkit-text-size-adjust: 100%;
-}
-
-body {
-    padding: 14px 20px 10px;
-}
-
-#app {
-    width: 100%;
-    height: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-box-orient: vertical;
-    -webkit-flex-direction: column;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.topbar {
-    height: 44px;
-    min-height: 44px;
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-box-pack: justify;
-    -webkit-justify-content: space-between;
-    justify-content: space-between;
-    -webkit-box-align: center;
-    -webkit-align-items: center;
-    align-items: center;
-    border-bottom: 1px solid #303830;
-    font-size: 14px;
-    color: #82917f;
-    letter-spacing: 1px;
-}
-
-.brand {
-    color: #b8e6a7;
-    font-weight: bold;
-    font-size: 17px;
-}
-
-.top-status {
-    color: #a9d99a;
-    font-size: 12px;
-}
-
-#main {
-    -webkit-box-flex: 1;
-    -webkit-flex: 1;
-    flex: 1;
-    min-height: 0;
-    padding: 15px 0 13px;
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: flex;
-    overflow: hidden;
-}
-
-.left {
-    width: 44%;
-    min-width: 0;
-    padding-right: 20px;
-    border-right: 1px solid #303830;
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-box-orient: vertical;
-    -webkit-flex-direction: column;
-    flex-direction: column;
-}
-
-.right {
-    width: 56%;
-    min-width: 0;
-    padding-left: 20px;
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-box-orient: vertical;
-    -webkit-flex-direction: column;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.label {
-    color: #82917f;
-    font-size: 12px;
-    letter-spacing: 1.5px;
-    margin-bottom: 10px;
-}
-
-.clockbox {
-    padding: 8px 0 17px;
-    border-bottom: 1px solid #303830;
-}
-
-#clock {
-    font-size: 76px;
-    font-weight: bold;
-    line-height: 1.1;
-    letter-spacing: -4px;
-    color: #e4f2df;
-    white-space: nowrap;
-}
-
-#date {
-    margin-top: 9px;
-    color: #a4afa1;
-    font-size: 17px;
-}
-
-.stats {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: flex;
-    padding: 15px 0;
-    border-bottom: 1px solid #303830;
-}
-
-.stat {
-    width: 33.33%;
-    padding-right: 5px;
-}
-
-.stat-number {
-    color: #c1e9b2;
-    font-size: 25px;
-    font-weight: bold;
-}
-
-.stat-name {
-    color: #82917f;
-    font-size: 10px;
-    margin-top: 5px;
-}
-
-.stack {
-    padding-top: 15px;
-}
-
-.stack-list {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-flex-wrap: wrap;
-    flex-wrap: wrap;
-    gap: 7px;
-}
-
-.tech {
-    color: #c4d8bd;
-    background: #1b241b;
-    border: 1px solid #303d2e;
-    padding: 7px 9px;
-    font-size: 12px;
-}
-
-.system {
-    margin-top: auto;
-    padding-top: 12px;
-    border-top: 1px solid #303830;
-}
-
-.system-line {
-    font-size: 13px;
-    line-height: 1.8;
-    color: #aab5a5;
-}
-
-.green {
-    color: #b8e6a7;
-}
-
-.muted {
-    color: #7f8b7d;
-}
-
-.workspace {
-    height: 61%;
-    min-height: 0;
-    overflow: hidden;
-    border-bottom: 1px solid #303830;
-    padding-bottom: 12px;
-}
-
-.workspace-heading {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-box-pack: justify;
-    -webkit-justify-content: space-between;
-    justify-content: space-between;
-    -webkit-box-align: center;
-    -webkit-align-items: center;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.workspace-heading .label {
-    margin-bottom: 0;
-}
-
-.workspace-count {
-    font-size: 11px;
-    color: #7f8b7d;
-}
-
-#projects {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-flex-wrap: wrap;
-    flex-wrap: wrap;
-    gap: 10px;
-    -webkit-align-content: flex-start;
-    align-content: flex-start;
-}
-
-.project {
-    width: calc(50% - 5px);
-    width: -webkit-calc(50% - 5px);
-    background: #171c17;
-    border: 1px solid #303830;
-    border-left: 3px solid #8ebd7d;
-    padding: 12px 12px 10px;
-    min-width: 0;
-}
-
-.project-name {
-    color: #c5e9b7;
-    font-size: 16px;
-    font-weight: bold;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.project-desc {
-    color: #9aa497;
-    font-size: 12px;
-    line-height: 1.5;
-    margin-top: 6px;
-    height: 34px;
-    overflow: hidden;
-}
-
-.project-meta {
-    margin-top: 8px;
-    color: #82917f;
-    font-size: 10px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.terminal {
-    -webkit-box-flex: 1;
-    -webkit-flex: 1;
-    flex: 1;
-    min-height: 0;
-    padding-top: 12px;
-    overflow: hidden;
-}
-
-.terminal-box {
-    background: #141814;
-    border: 1px solid #283128;
-    padding: 10px 13px;
-    height: 100%;
-    overflow: hidden;
-}
-
-.terminal-title {
-    color: #82917f;
-    font-size: 11px;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-}
-
-.terminal-line {
-    font-size: 12px;
-    line-height: 1.8;
-    color: #aab5a5;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.prompt {
-    color: #b8e6a7;
-}
-
-.footer {
-    min-height: 28px;
-    height: 28px;
-    border-top: 1px solid #303830;
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-box-pack: justify;
-    -webkit-justify-content: space-between;
-    justify-content: space-between;
-    -webkit-box-align: center;
-    -webkit-align-items: center;
-    align-items: center;
-    font-size: 10px;
-    color: #738071;
-}
-
-@media screen and (max-width: 700px) {
-    body {
-        padding: 8px;
-    }
-
-    .topbar {
-        height: 34px;
-        min-height: 34px;
-        font-size: 10px;
-    }
-
-    .brand {
-        font-size: 12px;
-    }
-
-    #main {
-        padding-top: 9px;
-        padding-bottom: 8px;
-    }
-
-    .left {
-        padding-right: 10px;
-        width: 43%;
-    }
-
-    .right {
-        padding-left: 10px;
-        width: 57%;
-    }
-
-    #clock {
-        font-size: 44px;
-        letter-spacing: -2px;
-    }
-
-    #date {
-        font-size: 12px;
-    }
-
-    .label {
-        font-size: 9px;
-        margin-bottom: 7px;
-    }
-
-    .stat-number {
-        font-size: 18px;
-    }
-
-    .stat-name {
-        font-size: 8px;
-    }
-
-    .tech {
-        font-size: 9px;
-        padding: 5px;
-    }
-
-    .system-line {
-        font-size: 9px;
-    }
-
-    .project {
-        padding: 7px;
-    }
-
-    .project-name {
-        font-size: 11px;
-    }
-
-    .project-desc {
-        font-size: 9px;
-        height: 26px;
-    }
-
-    .project-meta {
-        font-size: 8px;
-    }
-
-    .terminal-line {
-        font-size: 9px;
-    }
-}
-
-@media screen and (max-height: 500px) {
-    body {
-        padding-top: 5px;
-        padding-bottom: 4px;
-    }
-
-    .topbar {
-        height: 30px;
-        min-height: 30px;
-    }
-
-    #main {
-        padding-top: 6px;
-        padding-bottom: 6px;
-    }
-
-    .clockbox {
-        padding-top: 2px;
-        padding-bottom: 9px;
-    }
-
-    #clock {
-        font-size: 56px;
-    }
-
-    #date {
-        margin-top: 4px;
-    }
-
-    .stats {
-        padding: 8px 0;
-    }
-
-    .stack {
-        padding-top: 8px;
-    }
-
-    .project {
-        padding: 7px;
-    }
-
-    .project-desc {
-        height: 25px;
-    }
-
-    .terminal-box {
-        padding: 6px 9px;
-    }
-
-    .footer {
-        height: 22px;
-        min-height: 22px;
-    }
-}
+  }
+  body { position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
+
+  #stage {
+    position: absolute; top: 0; left: 0;
+    width: 1024px; height: 768px; overflow: hidden;
+    padding: 44px 48px 36px;
+    background-color: #0a0c0f;
+    background-image:
+      -webkit-radial-gradient(12% 18%, circle, rgba(57,211,83,0.10) 0%, rgba(57,211,83,0) 420px),
+      -webkit-radial-gradient(95% 100%, circle, rgba(88,120,255,0.10) 0%, rgba(88,120,255,0) 460px);
+    background-image:
+      radial-gradient(circle 420px at 12% 18%, rgba(57,211,83,0.10), rgba(57,211,83,0)),
+      radial-gradient(circle 460px at 95% 100%, rgba(88,120,255,0.10), rgba(88,120,255,0));
+    -webkit-transform-origin: 0 0; transform-origin: 0 0;
+  }
+
+  .row { display: -webkit-flex; display: flex; }
+  .col { display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; }
+  .grow { -webkit-flex: 1; flex: 1; min-width: 0; }
+
+  .label {
+    font-size: 13px; letter-spacing: 2.2px; text-transform: uppercase;
+    color: #7d8590; font-weight: 600;
+  }
+  .num { font-variant-numeric: tabular-nums; -webkit-font-feature-settings: "tnum"; font-feature-settings: "tnum"; }
+
+  /* ---------- topo ---------- */
+  #top { height: 22px; -webkit-align-items: center; align-items: center; }
+  #top .dot {
+    width: 8px; height: 8px; border-radius: 4px; background: #39d353; margin-right: 10px;
+    -webkit-animation: pulse 2.4s ease-in-out infinite; animation: pulse 2.4s ease-in-out infinite;
+  }
+  #top .dot.off { background: #f85149; -webkit-animation: none; animation: none; }
+  @-webkit-keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  #status { color: #7d8590; font-size: 13px; }
+
+  /* ---------- corpo ---------- */
+  #main { height: 610px; margin-top: 22px; }
+
+  /* esquerda: relógio */
+  #left { padding-right: 44px; -webkit-justify-content: space-between; justify-content: space-between; }
+  #greet { font-size: 26px; font-weight: 300; color: #aeb5bd; margin-top: 18px; }
+  #greet b { color: #fff; font-weight: 500; }
+
+  #clockWrap { -webkit-align-items: flex-start; align-items: flex-start; margin-top: 6px; margin-left: -8px; }
+  #clock {
+    white-space: nowrap; -webkit-flex-shrink: 0; flex-shrink: 0;
+    font-size: 188px; line-height: 1; font-weight: 100; letter-spacing: -6px; color: #fff;
+  }
+  #clock .colon { display: inline-block; margin: 0 2px; position: relative; top: -12px;
+    -webkit-transition: opacity .25s; transition: opacity .25s; }
+  #clock .colon.dim { opacity: .25; }
+  #secs { font-size: 34px; font-weight: 200; color: #39d353; margin: 30px 0 0 14px; letter-spacing: 0; }
+
+  #date { font-size: 30px; font-weight: 300; color: #d6dbe0; margin-top: 4px; }
+  #date span { color: #7d8590; }
+  #extra { margin-top: 18px; }
+  #extra .label { margin-right: 26px; white-space: nowrap; }
+  #extra .label b { color: #d6dbe0; font-weight: 600; }
+
+  #dayBar { margin-top: 34px; }
+  .bar { height: 4px; border-radius: 2px; background: rgba(255,255,255,.08); overflow: hidden; margin-top: 10px; }
+  .bar i { display: block; height: 4px; border-radius: 2px; width: 0;
+    background: #39d353;
+    background-image: -webkit-linear-gradient(left, #26a641, #39d353);
+    background-image: linear-gradient(to right, #26a641, #39d353); }
+  #dayBar .meta { -webkit-justify-content: space-between; justify-content: space-between; }
+  #dayPct { font-size: 13px; color: #aeb5bd; }
+
+  /* clima */
+  #weather { margin-top: 30px; -webkit-align-items: center; align-items: center; min-height: 92px; }
+  #wIcon { width: 64px; height: 64px; margin-right: 20px; }
+  #wTemp { font-size: 64px; font-weight: 200; line-height: 1; color: #fff; letter-spacing: -2px; }
+  #wInfo { margin-left: 22px; padding-left: 22px; border-left: 1px solid rgba(255,255,255,.1); }
+  #wDesc { font-size: 20px; color: #d6dbe0; font-weight: 400; }
+  #wMinMax { font-size: 15px; color: #7d8590; margin-top: 6px; }
+  #wMinMax b { color: #aeb5bd; font-weight: 500; }
+
+  /* direita: GitHub */
+  #gh {
+    width: 384px; height: 610px; padding: 26px 26px 22px;
+    border-radius: 22px;
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+  #ghHead { -webkit-align-items: center; align-items: center; }
+  #avatar { width: 46px; height: 46px; border-radius: 23px; background: #1c2128; margin-right: 14px;
+    border: 1px solid rgba(255,255,255,.12);
+    background-size: cover; background-position: center; -webkit-flex-shrink: 0; flex-shrink: 0; }
+  #ghUser { font-size: 19px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #ghSub { font-size: 13px; color: #7d8590; margin-top: 3px; }
+  .ghLogo { width: 22px; height: 22px; opacity: .55; }
+
+  #stats { margin-top: 22px; }
+  .stat { -webkit-flex: 1; flex: 1; }
+  .stat + .stat { padding-left: 14px; border-left: 1px solid rgba(255,255,255,.08); margin-left: 14px; }
+  .stat .v { font-size: 30px; font-weight: 300; color: #fff; line-height: 1.1; }
+  .stat .k { font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; color: #7d8590; margin-top: 4px; }
+
+  #heat { margin-top: 22px; height: 112px; position: relative; }
+  #heatGrid { height: 112px; }
+  .wk { width: 13px; margin-right: 3px; }
+  .wk:last-child { margin-right: 0; }
+  .c { width: 13px; height: 13px; border-radius: 3px; margin-bottom: 3px; background: #161b22; }
+  .c.l1 { background: #0e4429; } .c.l2 { background: #006d32; }
+  .c.l3 { background: #26a641; } .c.l4 { background: #39d353; }
+  .c.today { -webkit-box-shadow: 0 0 0 1.5px #fff; box-shadow: 0 0 0 1.5px #fff; }
+  .c.fut { background: transparent; }
+  #heatEmpty { position: absolute; top: 40px; left: 0; right: 0; text-align: center; color: #545d68; font-size: 13px; display: none; }
+
+  #commitsHead { margin-top: 16px; margin-bottom: 4px; -webkit-justify-content: space-between; justify-content: space-between; }
+  #commits { -webkit-flex: 1; flex: 1; overflow: hidden; }
+  .cm { padding: 11px 0; border-top: 1px solid rgba(255,255,255,.06); }
+  .cm:first-child { border-top: 0; }
+  .cm .msg { font-size: 15px; color: #e8eaed; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cm .meta { font-size: 12px; color: #7d8590; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cm .meta .repo { color: #58a6ff; }
+  .cm .meta .sha { font-family: Menlo, Courier, monospace; color: #545d68; margin-left: 6px; }
+  .cm.new .msg:before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 3px; background: #39d353; margin-right: 8px; position: relative; top: -2px; }
+  .empty { color: #545d68; font-size: 14px; padding-top: 14px; }
+
+  /* aviso de retrato */
+  #rotate {
+    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #0a0c0f;
+    color: #aeb5bd; font-size: 22px; text-align: center; padding-top: 45%;
+  }
+  @media (orientation: portrait) and (max-width: 800px) {
+    #rotate { display: block; }
+  }
+
+  /* escurecer à noite */
+  #night { position: absolute; top: 0; left: 0; width: 1024px; height: 768px; background: #000; opacity: 0;
+    pointer-events: none; -webkit-transition: opacity 2s; transition: opacity 2s; }
 </style>
 </head>
-
 <body>
-<div id="app">
+<div id="stage">
+  <div id="top" class="row">
+    <div class="dot" id="netDot"></div>
+    <div id="status" class="grow">iniciando…</div>
+    <div class="label" id="cityLbl"></div>
+  </div>
 
-    <header class="topbar">
-        <div class="brand">[ PAINEL_DEV ]</div>
-        <div>FELIPE / WORKSPACE</div>
-        <div class="top-status">● LOCAL MODE</div>
-    </header>
+  <div id="main" class="row">
+    <!-- ESQUERDA -->
+    <div id="left" class="col grow">
+      <div>
+        <div id="greet"></div>
+        <div id="clockWrap" class="row">
+          <div id="clock" class="num"><span id="hh">--</span><span class="colon" id="colon">:</span><span id="mm">--</span></div>
+          <div id="secs" class="num">--</div>
+        </div>
+        <div id="date"></div>
+        <div id="extra" class="row"><span class="label">Semana <b id="xWeek" class="num">--</b></span><span class="label">Dia <b id="xDay" class="num">--</b></span><span class="label"><span id="xNext">----</span> em <b id="xYear" class="num">--</b> dias</span></div>
+      </div>
 
-    <main id="main">
+      <div>
+        <div id="weather" class="row">
+          <svg id="wIcon" viewBox="0 0 64 64"></svg>
+          <div id="wTemp" class="num">--°</div>
+          <div id="wInfo">
+            <div id="wDesc">carregando clima…</div>
+            <div id="wMinMax"></div>
+          </div>
+        </div>
 
-        <section class="left">
+        <div id="dayBar">
+          <div class="row meta"><span class="label">Dia</span><span id="dayPct" class="num"></span></div>
+          <div class="bar"><i id="dayFill"></i></div>
+        </div>
+      </div>
+    </div>
 
-            <div class="clockbox">
-                <div class="label">HORÁRIO LOCAL</div>
-                <div id="clock">--:--:--</div>
-                <div id="date">Carregando data...</div>
-            </div>
+    <!-- DIREITA: GITHUB -->
+    <div id="gh" class="col">
+      <div id="ghHead" class="row">
+        <div id="avatar"></div>
+        <div class="grow">
+          <div id="ghUser">GitHub</div>
+          <div id="ghSub">carregando…</div>
+        </div>
+        <svg class="ghLogo" viewBox="0 0 16 16"><path fill="#fff" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      </div>
 
-            <div class="stats">
-                <div class="stat">
-                    <div class="stat-number" id="project-count">04</div>
-                    <div class="stat-name">PROJETOS</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-number">ES5</div>
-                    <div class="stat-name">JAVASCRIPT</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-number">4:3</div>
-                    <div class="stat-name">DISPLAY</div>
-                </div>
-            </div>
+      <div id="stats" class="row">
+        <div class="stat"><div class="v num" id="sToday">–</div><div class="k">Commits hoje</div></div>
+        <div class="stat"><div class="v num" id="sStreak">–</div><div class="k">Sequência</div></div>
+        <div class="stat"><div class="v num" id="sYear">–</div><div class="k">No ano</div></div>
+      </div>
 
-            <div class="stack">
-                <div class="label">TECH STACK</div>
-                <div class="stack-list">
-                    <div class="tech">React</div>
-                    <div class="tech">Next.js</div>
-                    <div class="tech">TypeScript</div>
-                    <div class="tech">Node.js</div>
-                    <div class="tech">PostgreSQL</div>
-                    <div class="tech">Git</div>
-                    <div class="tech">Docker</div>
-                    <div class="tech">REST API</div>
-                </div>
-            </div>
+      <div id="heat">
+        <div id="heatGrid" class="row"></div>
+        <div id="heatEmpty">mapa de contribuições indisponível</div>
+      </div>
 
-            <div class="system">
-                <div class="label">SESSÃO LOCAL</div>
-                <div class="system-line">
-                    <span class="green">●</span> Interface carregada
-                </div>
-                <div class="system-line">
-                    <span class="green">●</span> Modo offline disponível
-                </div>
-                <div class="system-line">
-                    <span class="muted">●</span> Tempo ativo:
-                    <span id="uptime">00:00:00</span>
-                </div>
-            </div>
+      <div id="commitsHead" class="row"><span class="label">Últimos commits</span><span class="label" id="ghAgo"></span></div>
+      <div id="commits"><div class="empty">buscando commits…</div></div>
+    </div>
+  </div>
 
-        </section>
-
-        <section class="right">
-
-            <div class="workspace">
-                <div class="workspace-heading">
-                    <div class="label">WORKSPACE / PROJETOS</div>
-                    <div class="workspace-count" id="workspace-count">
-                        04 ITEMS
-                    </div>
-                </div>
-
-                <div id="projects"></div>
-            </div>
-
-            <div class="terminal">
-                <div class="terminal-box">
-                    <div class="terminal-title">
-                        TERMINAL / SYSTEM STATUS
-                    </div>
-                    <div class="terminal-line">
-                        <span class="prompt">dev@ipad:~$</span>
-                        workspace --status
-                    </div>
-                    <div class="terminal-line">
-                        BUILD: <span class="green">READY</span>
-                        &nbsp; / &nbsp; MODE: IDLE
-                    </div>
-                    <div class="terminal-line">
-                        UI: <span class="green">STABLE</span>
-                        &nbsp; / &nbsp; NETWORK: NOT REQUIRED
-                    </div>
-                    <div class="terminal-line">
-                        <span class="prompt">dev@ipad:~$</span>
-                        <span class="muted">waiting for next session_</span>
-                    </div>
-                </div>
-            </div>
-
-        </section>
-
-    </main>
-
-    <footer class="footer">
-        <div>DEV MONITOR / STATIC MODE</div>
-        <div>NO API · NO TRACKING</div>
-        <div id="footer-date">LOCAL CLOCK</div>
-    </footer>
-
+  <div id="night"></div>
 </div>
+<div id="rotate">Gire o iPad para a horizontal ↻</div>
 
 <script>
+/* =====================================================================
+   CONFIGURAÇÃO — edite aqui (ou use ?user=SEU_USUARIO na URL)
+   ===================================================================== */
+var CONFIG = {
+  githubUser: 'FelipeFrancoo',
+  nome: 'Felipe',
+  cidade: 'Jataí',
+  lat: -17.88, lon: -51.72,
+  timezone: 'America/Sao_Paulo',
+  githubToken: '',          // opcional (token só-leitura). Sem token: 60 req/hora, suficiente.
+  repoLimit: 4,             // quantos repositórios recentes consultar
+  semanasHeatmap: 20,
+  noiteInicio: 0, noiteFim: 6, noiteOpacidade: 0.55   // escurece a tela à noite
+};
+
 (function () {
+  var m = /[?&]user=([^&#]+)/.exec(location.search);
+  if (m) CONFIG.githubUser = decodeURIComponent(m[1]);
+  var n = /[?&]nome=([^&#]+)/.exec(location.search);
+  if (n) CONFIG.nome = decodeURIComponent(n[1]);
+})();
 
-    /*
-     * =========================================
-     * PERSONALIZE SEUS PROJETOS AQUI
-     *
-     * Copie um bloco para adicionar outro projeto.
-     * Não precisa alterar o HTML ou o CSS.
-     *
-     * name: nome do projeto
-     * desc: descrição curta
-     * tech: tecnologias principais
-     * status: status mostrado no cartão
-     * =========================================
-     */
+/* ---------------- utilidades (ES5) ---------------- */
+function $(id) { return document.getElementById(id); }
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function fmtNum(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+function ymd(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
 
-    var PROJECTS = [
-        {
-            name: "CineGo",
-            desc: "Plataforma de filmes e entretenimento.",
-            tech: "Next.js / SaaS",
-            status: "EM DESENVOLVIMENTO"
-        },
-        {
-            name: "TCC / IA",
-            desc: "Detecção de textos acadêmicos gerados por IA.",
-            tech: "Python / NLP",
-            status: "PESQUISA"
-        },
-        {
-            name: "Machine Tracker",
-            desc: "Controle de empréstimos e equipamentos.",
-            tech: "PostgreSQL / Web",
-            status: "PROJETO"
-        },
-        {
-            name: "Side Projects",
-            desc: "Experimentos, automações e novas ideias.",
-            tech: "Node.js / APIs",
-            status: "BACKLOG"
+var DIAS = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+function tempoAtras(date) {
+  var s = Math.max(0, Math.floor((new Date() - date) / 1000));
+  if (s < 60) return 'agora';
+  var m = Math.floor(s / 60); if (m < 60) return 'há ' + m + ' min';
+  var h = Math.floor(m / 60); if (h < 24) return 'há ' + h + ' h';
+  var d = Math.floor(h / 24); if (d === 1) return 'ontem';
+  if (d < 30) return 'há ' + d + ' dias';
+  var mo = Math.floor(d / 30); return 'há ' + mo + (mo === 1 ? ' mês' : ' meses');
+}
+
+// ISO 8601 -> Date (Safari 9 parseia mal algumas variantes)
+function parseISO(s) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|([+-])(\d{2}):?(\d{2}))?$/.exec(s);
+  if (!m) return new Date(s);
+  var t = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
+  if (m[7] && m[7] !== 'Z') {
+    var off = (+m[9] * 60 + +m[10]) * 60000;
+    t += (m[8] === '+' ? -off : off);
+  }
+  return new Date(t);
+}
+
+function getJSON(url, cb, headers) {
+  var x = new XMLHttpRequest();
+  var done = false;
+  x.open('GET', url, true);
+  x.timeout = 20000;
+  if (headers) for (var k in headers) if (headers.hasOwnProperty(k)) x.setRequestHeader(k, headers[k]);
+  x.onreadystatechange = function () {
+    if (x.readyState !== 4 || done) return;
+    done = true;
+    if (x.status >= 200 && x.status < 300) {
+      var data;
+      try { data = JSON.parse(x.responseText); } catch (e) { cb('json'); return; }
+      cb(null, data);
+    } else {
+      cb(x.status || 'rede');
+    }
+  };
+  x.ontimeout = function () { if (!done) { done = true; cb('timeout'); } };
+  x.send();
+}
+
+function ghHeaders() {
+  var h = { 'Accept': 'application/vnd.github+json' };
+  if (CONFIG.githubToken) h.Authorization = 'token ' + CONFIG.githubToken;
+  return h;
+}
+
+/* ---------------- escala do palco (sem rolagem) ---------------- */
+function fit() {
+  var w = window.innerWidth, h = window.innerHeight;
+  var s = Math.min(w / 1024, h / 768);
+  var x = Math.round((w - 1024 * s) / 2), y = Math.round((h - 768 * s) / 2);
+  var t = 'translate(' + x + 'px,' + y + 'px) scale(' + s + ')';
+  var st = $('stage').style;
+  st.webkitTransform = t; st.transform = t;
+}
+window.addEventListener('resize', fit);
+window.addEventListener('orientationchange', function () { setTimeout(fit, 300); });
+document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+fit();
+
+/* ---------------- relógio ---------------- */
+// ajusta o tamanho do relógio para caber na coluna (a fonte do iOS 9 difere da do desktop)
+var clockSize = 200;
+function fitClock() {
+  var c = $('clock'), avail = $('left').clientWidth - 44 - $('secs').offsetWidth - 14;
+  clockSize = 200; c.style.fontSize = clockSize + 'px';
+  while (c.offsetWidth > avail && clockSize > 120) { clockSize -= 4; c.style.fontSize = clockSize + 'px'; }
+  c.style.letterSpacing = Math.round(-clockSize / 32) + 'px';
+  $('secs').style.marginTop = Math.round(clockSize * 0.16) + 'px';
+}
+var lastMin = -1;
+function tick() {
+  var d = new Date();
+  var h = d.getHours(), mi = d.getMinutes(), s = d.getSeconds();
+  $('secs').innerHTML = pad(s);
+  $('colon').className = 'colon' + (s % 2 ? ' dim' : '');
+  if (mi !== lastMin) {
+    lastMin = mi;
+    $('hh').innerHTML = pad(h);
+    $('mm').innerHTML = pad(mi);
+    $('date').innerHTML = DIAS[d.getDay()] + '<span>, </span>' + d.getDate() + ' de ' + MESES[d.getMonth()];
+    fitClock();
+    var j1 = new Date(d.getFullYear(), 0, 1), doy = Math.floor((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - j1) / 864e5) + 1;
+    var th = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 3 - (d.getDay() + 6) % 7);
+    var wk = 1 + Math.round(((th - new Date(th.getFullYear(), 0, 4)) / 864e5 - 3 + (new Date(th.getFullYear(), 0, 4).getDay() + 6) % 7) / 7);
+    var diasAno = (new Date(d.getFullYear() + 1, 0, 1) - j1) / 864e5;
+    $('xWeek').innerHTML = wk; $('xDay').innerHTML = doy;
+    $('xYear').innerHTML = Math.round(diasAno - doy);
+    $('xNext').innerHTML = d.getFullYear() + 1;
+    var saud = h < 5 ? 'Boa madrugada' : h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+    $('greet').innerHTML = saud + ', <b>' + esc(CONFIG.nome) + '</b>';
+    var pct = (h * 60 + mi) / 1440 * 100;
+    $('dayFill').style.width = pct.toFixed(1) + '%';
+    var resta = 1440 - (h * 60 + mi);
+    $('dayPct').innerHTML = Math.floor(pct) + '% · faltam ' + Math.floor(resta / 60) + 'h' + pad(resta % 60);
+    var noite = CONFIG.noiteInicio > CONFIG.noiteFim
+      ? (h >= CONFIG.noiteInicio || h < CONFIG.noiteFim)
+      : (h >= CONFIG.noiteInicio && h < CONFIG.noiteFim);
+    $('night').style.opacity = noite ? CONFIG.noiteOpacidade : 0;
+    if (ghLastOk) $('ghAgo').innerHTML = tempoAtras(ghLastOk);
+    refreshCommitTimes();
+    // recarrega a página 1x por dia (4h) para evitar vazamento de memória no Safari antigo
+    if (h === 4 && mi === 0) setTimeout(function () { location.reload(); }, 5000);
+  }
+}
+setInterval(tick, 1000);
+tick();
+$('cityLbl').innerHTML = esc(CONFIG.cidade);
+
+/* ---------------- status de rede ---------------- */
+function setStatus(ok, txt) {
+  $('netDot').className = 'dot' + (ok ? '' : ' off');
+  $('status').innerHTML = esc(txt);
+}
+
+/* ---------------- clima (Open-Meteo, sem chave) ---------------- */
+var WMO = {
+  0: ['Céu limpo', 'sun'], 1: ['Poucas nuvens', 'sun-cloud'], 2: ['Parcialmente nublado', 'sun-cloud'], 3: ['Nublado', 'cloud'],
+  45: ['Neblina', 'fog'], 48: ['Neblina', 'fog'],
+  51: ['Garoa fraca', 'rain'], 53: ['Garoa', 'rain'], 55: ['Garoa forte', 'rain'],
+  61: ['Chuva fraca', 'rain'], 63: ['Chuva', 'rain'], 65: ['Chuva forte', 'rain'],
+  80: ['Pancadas de chuva', 'rain'], 81: ['Pancadas de chuva', 'rain'], 82: ['Temporal', 'storm'],
+  95: ['Trovoadas', 'storm'], 96: ['Trovoadas com granizo', 'storm'], 99: ['Trovoadas com granizo', 'storm']
+};
+function icon(kind, night) {
+  var sun = night
+    ? '<path d="M38 14a16 16 0 1 0 14 22A13 13 0 0 1 38 14z" fill="#c9d1d9"/>'
+    : '<circle cx="28" cy="26" r="11" fill="#f2cc60"/><g stroke="#f2cc60" stroke-width="3" stroke-linecap="round"><path d="M28 6v5M28 41v5M8 26h5M43 26h5M14 12l3.5 3.5M38.5 36.5L42 40M14 40l3.5-3.5M38.5 15.5L42 12"/></g>';
+  var cloud = '<path d="M20 50h26a10 10 0 0 0 0-20 14 14 0 0 0-27-2A11 11 0 0 0 20 50z" fill="#8b949e"/>';
+  var cloudFront = '<path d="M22 52h26a9 9 0 0 0 0-18 13 13 0 0 0-25-2 10 10 0 0 0-1 20z" fill="#c9d1d9"/>';
+  var drops = '<g stroke="#58a6ff" stroke-width="3" stroke-linecap="round"><path d="M24 54l-3 6M34 54l-3 6M44 54l-3 6"/></g>';
+  var bolt = '<path d="M34 50l-6 9h6l-3 7 9-11h-6l3-5z" fill="#f2cc60"/>';
+  var fog = '<g stroke="#8b949e" stroke-width="3" stroke-linecap="round"><path d="M12 30h40M8 38h44M14 46h36"/></g>';
+  switch (kind) {
+    case 'sun': return sun;
+    case 'sun-cloud': return '<g transform="translate(-4,-6) scale(.85)">' + sun + '</g>' + cloudFront;
+    case 'cloud': return cloud;
+    case 'rain': return '<g transform="translate(0,-8)">' + cloudFront + '</g>' + drops;
+    case 'storm': return '<g transform="translate(0,-10)">' + cloudFront + '</g>' + bolt;
+    case 'fog': return fog;
+  }
+  return cloud;
+}
+function loadWeather() {
+  var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + CONFIG.lat + '&longitude=' + CONFIG.lon +
+    '&current=temperature_2m,apparent_temperature,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max' +
+    '&timezone=' + encodeURIComponent(CONFIG.timezone) + '&forecast_days=1';
+  getJSON(url, function (err, d) {
+    if (err || !d.current) { $('wDesc').innerHTML = 'clima indisponível'; return; }
+    var c = d.current, w = WMO[c.weather_code] || ['—', 'cloud'];
+    $('wTemp').innerHTML = Math.round(c.temperature_2m) + '°';
+    $('wDesc').innerHTML = w[0];
+    $('wIcon').innerHTML = icon(w[1], c.is_day === 0);
+    var dl = d.daily;
+    $('wMinMax').innerHTML = 'máx <b>' + Math.round(dl.temperature_2m_max[0]) + '°</b> · mín <b>' +
+      Math.round(dl.temperature_2m_min[0]) + '°</b> · chuva <b>' + (dl.precipitation_probability_max[0] || 0) + '%</b>';
+  });
+}
+
+/* ---------------- GitHub ---------------- */
+var ghLastOk = null;
+var commitList = [];
+
+function refreshCommitTimes() {
+  var els = document.querySelectorAll('.cm .when');
+  for (var i = 0; i < els.length; i++) els[i].innerHTML = tempoAtras(new Date(+els[i].getAttribute('data-t')));
+}
+
+function renderCommits() {
+  var box = $('commits');
+  if (!commitList.length) { box.innerHTML = '<div class="empty">nenhum commit recente encontrado</div>'; return; }
+  var html = '', now = new Date();
+  for (var i = 0; i < commitList.length && i < 6; i++) {
+    var c = commitList[i];
+    var fresh = (now - c.date) < 3600000;
+    html += '<div class="cm' + (fresh ? ' new' : '') + '"><div class="msg">' + esc(c.msg) + '</div>' +
+      '<div class="meta"><span class="repo">' + esc(c.repo) + '</span> · <span class="when" data-t="' + c.date.getTime() + '">' +
+      tempoAtras(c.date) + '</span><span class="sha">' + c.sha + '</span></div></div>';
+  }
+  box.innerHTML = html;
+}
+
+function updateTodayCount() {
+  var today = ymd(new Date()), n = 0;
+  for (var i = 0; i < commitList.length; i++) if (ymd(commitList[i].date) === today) n++;
+  if (heatToday !== null && heatToday > n) n = heatToday;
+  $('sToday').innerHTML = n;
+}
+
+// 1) eventos públicos -> repositórios com push recente; 2) commits de cada um
+function loadGitHub() {
+  var u = CONFIG.githubUser;
+  if (!u || u === 'SEU_USUARIO_GITHUB') {
+    $('ghSub').innerHTML = 'defina CONFIG.githubUser';
+    $('commits').innerHTML = '<div class="empty">Edite <b>githubUser</b> no arquivo ou abra com <b>?user=seu_usuario</b> na URL.</div>';
+    setStatus(false, 'GitHub não configurado');
+    return;
+  }
+  $('ghUser').innerHTML = '@' + esc(u);
+  $('avatar').style.backgroundImage = 'url(https://github.com/' + encodeURIComponent(u) + '.png?size=92)';
+
+  getJSON('https://api.github.com/users/' + encodeURIComponent(u) + '/events/public?per_page=60', function (err, events) {
+    var repos = [], seen = {};
+    if (!err && events && events.length) {
+      for (var i = 0; i < events.length && repos.length < CONFIG.repoLimit; i++) {
+        var ev = events[i];
+        if ((ev.type === 'PushEvent' || ev.type === 'CreateEvent') && ev.repo && !seen[ev.repo.name]) {
+          seen[ev.repo.name] = 1; repos.push(ev.repo.name);
         }
-    ];
-
-    var startTime = new Date().getTime();
-
-    function byId(id) {
-        return document.getElementById(id);
+      }
     }
-
-    function pad(n) {
-        return n < 10 ? "0" + n : String(n);
+    if (err === 403) { setStatus(false, 'limite da API do GitHub atingido — tentando mais tarde'); return; }
+    if (repos.length) fetchCommits(repos);
+    else {
+      // sem eventos recentes: usa os repositórios com push mais recente
+      getJSON('https://api.github.com/users/' + encodeURIComponent(u) + '/repos?sort=pushed&per_page=' + CONFIG.repoLimit, function (e2, list) {
+        if (e2 || !list) { setStatus(false, 'sem conexão com o GitHub (' + (err || e2) + ')'); return; }
+        var r = [];
+        for (var j = 0; j < list.length; j++) r.push(list[j].full_name);
+        fetchCommits(r);
+      }, ghHeaders());
     }
+  }, ghHeaders());
+}
 
-    function escapeHTML(value) {
-        return String(value)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#39;");
-    }
+function fetchCommits(repos) {
+  var u = CONFIG.githubUser, pending = repos.length, all = [], erros = 0;
+  if (!pending) { commitList = []; renderCommits(); return; }
+  for (var i = 0; i < repos.length; i++) (function (repo) {
+    getJSON('https://api.github.com/repos/' + repo + '/commits?per_page=10&author=' + encodeURIComponent(u), function (err, list) {
+      if (err) erros++;
+      else for (var k = 0; k < list.length; k++) {
+        var c = list[k], cc = c.commit || {};
+        var when = (cc.committer && cc.committer.date) || (cc.author && cc.author.date);
+        all.push({
+          repo: repo.split('/')[1], msg: (cc.message || '').split('\n')[0],
+          date: parseISO(when), sha: (c.sha || '').substr(0, 7)
+        });
+      }
+      if (--pending === 0) {
+        all.sort(function (a, b) { return b.date - a.date; });
+        commitList = all;
+        renderCommits();
+        updateTodayCount();
+        ghLastOk = new Date();
+        $('ghAgo').innerHTML = 'agora';
+        $('ghSub').innerHTML = repos.length + ' repositório' + (repos.length > 1 ? 's' : '') + ' ativo' + (repos.length > 1 ? 's' : '');
+        if (erros === repos.length) setStatus(false, 'falha ao buscar commits');
+        else setStatus(true, 'online · atualizado às ' + pad(ghLastOk.getHours()) + ':' + pad(ghLastOk.getMinutes()));
+      }
+    }, ghHeaders());
+  })(repos[i]);
+}
 
-    function updateClock() {
-        var d = new Date();
+/* mapa de contribuições (API pública não-oficial, sem token) */
+var heatToday = null;
+function loadHeatmap() {
+  var u = CONFIG.githubUser;
+  if (!u || u === 'SEU_USUARIO_GITHUB') return;
+  getJSON('https://github-contributions-api.jogruber.de/v4/' + encodeURIComponent(u) + '?y=last', function (err, d) {
+    if (err || !d || !d.contributions) { $('heatEmpty').style.display = 'block'; return; }
+    $('heatEmpty').style.display = 'none';
+    var map = {}, list = d.contributions;
+    for (var i = 0; i < list.length; i++) map[list[i].date] = list[i];
 
-        var days = [
-            "Domingo", "Segunda-feira", "Terça-feira",
-            "Quarta-feira", "Quinta-feira", "Sexta-feira",
-            "Sábado"
-        ];
+    var today = new Date(); today.setHours(12, 0, 0, 0);
+    var todayKey = ymd(today);
+    heatToday = map[todayKey] ? map[todayKey].count : 0;
 
-        var months = [
-            "janeiro", "fevereiro", "março", "abril",
-            "maio", "junho", "julho", "agosto",
-            "setembro", "outubro", "novembro", "dezembro"
-        ];
+    // sequência: conta dias seguidos com contribuição (hoje vazio não quebra)
+    var streak = 0, cur = new Date(today.getTime());
+    if (!map[todayKey] || !map[todayKey].count) cur.setDate(cur.getDate() - 1);
+    while (map[ymd(cur)] && map[ymd(cur)].count > 0) { streak++; cur.setDate(cur.getDate() - 1); }
+    $('sStreak').innerHTML = streak + '<span style="font-size:15px;color:#7d8590"> d</span>';
 
-        byId("clock").innerHTML =
-            pad(d.getHours()) + ":" +
-            pad(d.getMinutes()) + ":" +
-            pad(d.getSeconds());
+    var yr = d.total && d.total.lastYear !== undefined ? d.total.lastYear : 0;
+    if (!yr) for (var t = 0; t < list.length; t++) yr += list[t].count;
+    $('sYear').innerHTML = fmtNum(yr);
 
-        byId("date").innerHTML =
-            days[d.getDay()] + ", " +
-            d.getDate() + " de " +
-            months[d.getMonth()];
-
-        byId("footer-date").innerHTML =
-            "LOCAL " + pad(d.getHours()) +
-            ":" + pad(d.getMinutes());
-    }
-
-    function updateUptime() {
-        var elapsed = Math.floor(
-            (new Date().getTime() - startTime) / 1000
-        );
-
-        var hours = Math.floor(elapsed / 3600);
-        var minutes = Math.floor((elapsed % 3600) / 60);
-        var seconds = elapsed % 60;
-
-        byId("uptime").innerHTML =
-            pad(hours) + ":" +
-            pad(minutes) + ":" +
-            pad(seconds);
-    }
-
-    function renderProjects() {
-        var html = "";
-        var i;
-        var p;
-
-        for (i = 0; i < PROJECTS.length; i++) {
-            p = PROJECTS[i];
-
-            html += '<div class="project">';
-            html += '<div class="project-name">' +
-                escapeHTML(p.name) + '</div>';
-            html += '<div class="project-desc">' +
-                escapeHTML(p.desc) + '</div>';
-            html += '<div class="project-meta">' +
-                escapeHTML(p.tech) + '</div>';
-            html += '<div class="project-meta">' +
-                '<span class="green">●</span> ' +
-                escapeHTML(p.status) + '</div>';
-            html += '</div>';
+    // grade: colunas = semanas (dom→sáb), última coluna = semana atual
+    var weeks = CONFIG.semanasHeatmap;
+    var start = new Date(today.getTime());
+    start.setDate(start.getDate() - today.getDay() - (weeks - 1) * 7);
+    var html = '';
+    for (var w = 0; w < weeks; w++) {
+      html += '<div class="wk">';
+      for (var dd = 0; dd < 7; dd++) {
+        var day = new Date(start.getTime()); day.setDate(start.getDate() + w * 7 + dd);
+        var key = ymd(day), cls = 'c';
+        if (day > today) cls += ' fut';
+        else {
+          var it = map[key];
+          if (it && it.level) cls += ' l' + it.level;
+          if (key === todayKey) cls += ' today';
         }
-
-        byId("projects").innerHTML = html;
-        byId("project-count").innerHTML =
-            pad(PROJECTS.length);
-
-        byId("workspace-count").innerHTML =
-            pad(PROJECTS.length) + " ITEMS";
+        html += '<div class="' + cls + '"></div>';
+      }
+      html += '</div>';
     }
+    $('heatGrid').innerHTML = html;
+    updateTodayCount();
+  });
+}
 
-    function init() {
-        renderProjects();
-        updateClock();
-        updateUptime();
-
-        window.setInterval(updateClock, 1000);
-        window.setInterval(updateUptime, 1000);
-    }
-
-    init();
-
-}());
+/* ---------------- agenda de atualizações ---------------- */
+loadWeather(); loadGitHub(); loadHeatmap();
+setInterval(loadWeather, 30 * 60 * 1000);   // 30 min
+setInterval(loadGitHub, 10 * 60 * 1000);    // 10 min  (~30 req/h, limite é 60)
+setInterval(loadHeatmap, 60 * 60 * 1000);   // 1 h
 </script>
 </body>
 </html>
