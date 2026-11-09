@@ -11,7 +11,7 @@
 <!--
   Painel para iPad mini 1 (iOS 9.3.5 / Safari 9) — 1024 x 768 em paisagem.
   JS em ES5 puro; CSS sem grid, sem variáveis, sem vh.
-  Tudo é calculado no próprio iPad (relógio, calendário, lua, sol, binário),
+  Tudo roda no próprio iPad (relógio, calendário, timer, sol, binário),
   sem nenhuma dependência de internet (o iOS 9 não abre as APIs atuais).
 -->
 <style>
@@ -120,11 +120,36 @@
   .cd.today span { display: inline-block; width: 30px; height: 30px; line-height: 30px; border-radius: 15px;
     background: #39d353; color: #07080a; font-weight: 700; }
 
-  /* lua */
-  #moonSvg { width: 58px; height: 58px; margin-right: 18px; -webkit-flex-shrink: 0; flex-shrink: 0; }
-  #moonName { font-size: 19px; color: #fff; font-weight: 400; }
-  #moonInfo { font-size: 13px; color: #7d8590; margin-top: 5px; }
-  #moonInfo b { color: #aeb5bd; font-weight: 500; }
+  /* timer */
+  #tmInfo { letter-spacing: 1.4px; }
+  #timer.run #tmInfo { color: #aeb5bd; }
+  #timer.paused #tmInfo { color: #f2cc60; }
+  #timer.alarm #tmInfo { color: #39d353; }
+  #tmMain { margin-top: 10px; height: 50px; }
+  #tmTime { font-size: 50px; font-weight: 200; line-height: 50px; color: #3a4048; letter-spacing: -1px; }
+  #timer.run #tmTime { color: #fff; }
+  #timer.paused #tmTime { color: #f2cc60; }
+  #timer.alarm #tmTime { color: #39d353; }
+  #tmCancel { width: 42px; height: 42px; border-radius: 21px; border: 1px solid rgba(255,255,255,.16); display: none; }
+  #tmCancel svg { display: block; margin: 14px; }
+  #timer.run #tmCancel, #timer.paused #tmCancel { display: block; }
+  .bar.tm { margin-top: 12px; }
+  .bar.tm i { -webkit-transition: width 1s linear; transition: width 1s linear; }
+  #timer.paused .bar.tm i { background: #f2cc60; background-image: none; }
+  #tmChips { margin-top: 16px; }
+  .chip { width: 50px; height: 46px; border-radius: 12px; text-align: center; padding-top: 7px;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+    color: #d6dbe0; font-size: 18px; font-weight: 500; line-height: 1.05; }
+  .chip small { display: block; font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: #7d8590; font-weight: 600; margin-top: 2px; }
+  .chip.on { background: #39d353; border-color: #39d353; color: #07080a; }
+  .chip.on small { color: rgba(7,8,10,.6); }
+  #card.alarm { -webkit-animation: glow 1.4s ease-in-out infinite; animation: glow 1.4s ease-in-out infinite; }
+  @-webkit-keyframes glow {
+    0%, 100% { border-color: rgba(57,211,83,.25); background-color: rgba(57,211,83,.03); }
+    50% { border-color: #39d353; background-color: rgba(57,211,83,.14); } }
+  @keyframes glow {
+    0%, 100% { border-color: rgba(57,211,83,.25); background-color: rgba(57,211,83,.03); }
+    50% { border-color: #39d353; background-color: rgba(57,211,83,.14); } }
 
   /* sol */
   .stat { -webkit-flex: 1; flex: 1; }
@@ -145,7 +170,7 @@
 <body>
 <div id="stage">
   <div id="top" class="row center">
-    <div id="status" class="grow">v4</div>
+    <div id="status" class="grow">v5</div>
   </div>
 
   <div id="main" class="row">
@@ -184,12 +209,14 @@
       </div>
 
       <div class="sep"></div>
-      <div class="row center">
-        <div id="moonSvg"></div>
-        <div class="grow">
-          <div id="moonName">—</div>
-          <div id="moonInfo"></div>
+      <div id="timer" class="idle">
+        <div class="row between center"><span class="label">Timer</span><span class="label" id="tmInfo">escolha um tempo</span></div>
+        <div id="tmMain" class="row between center">
+          <div id="tmTime" class="num">00:00</div>
+          <div id="tmCancel"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M1 1l10 10M11 1L1 11" stroke="#aeb5bd" stroke-width="1.6" stroke-linecap="round"/></svg></div>
         </div>
+        <div class="bar tm"><i id="tmFill"></i></div>
+        <div id="tmChips" class="row between"></div>
       </div>
 
       <div class="sep"></div>
@@ -212,7 +239,9 @@
    ===================================================================== */
 var CONFIG = {
   nome: 'Felipe',
-  lat: -17.88, lon: -51.72,          // para nascer/pôr do sol e lado da lua (sul)
+  lat: -17.88, lon: -51.72,          // para nascer/pôr do sol
+  timers: [3, 5, 10, 15, 25, 60],    // botões do timer, em minutos (6 cabem bem)
+  alarmeDuracao: 60,                 // segundos apitando se ninguém tocar na tela
   noiteInicio: 0, noiteFim: 6, noiteOpacidade: 0.55
 };
 (function () {
@@ -303,47 +332,151 @@ function renderCal(d) {
   $('cal').innerHTML = html;
 }
 
-/* ---------------- lua (cálculo local) ---------------- */
-var SYN = 29.530588853;
-var NEW_REF = Date.UTC(2000, 0, 6, 18, 14);   // lua nova de referência
-function moon(d) {
-  var age = ((d.getTime() - NEW_REF) / 864e5) % SYN;
-  if (age < 0) age += SYN;
-  var f = age / SYN;
-  var illum = (1 - Math.cos(2 * Math.PI * f)) / 2;
-  var nomes = ['Lua nova', 'Lua crescente', 'Quarto crescente', 'Crescente gibosa',
-               'Lua cheia', 'Minguante gibosa', 'Quarto minguante', 'Lua minguante'];
-  var nome = nomes[Math.floor(f * 8 + 0.5) % 8];
-  var paraCheia = age < SYN / 2 ? SYN / 2 - age : SYN * 1.5 - age;
-  var paraNova = SYN - age;
-  return { f: f, illum: illum, nome: nome, cheia: paraCheia, nova: paraNova };
+/* ---------------- som (Web Audio; precisa de um toque para liberar no iOS) ---------------- */
+var AC = window.AudioContext || window.webkitAudioContext, actx = null;
+function unlockAudio() {
+  if (!AC) return;
+  try {
+    if (!actx) actx = new AC();
+    var src = actx.createBufferSource();
+    src.buffer = actx.createBuffer(1, 1, 22050);
+    src.connect(actx.destination);
+    if (src.start) src.start(0); else src.noteOn(0);
+    if (actx.resume && actx.state === 'suspended') actx.resume();
+  } catch (e) {}
 }
-function moonSvg(f, sul) {
-  var r = 26, c = 29;
-  var x = r * Math.abs(Math.cos(2 * Math.PI * f));
-  var waxing = f < 0.5;
-  var crescent = (f < 0.25 || f > 0.75);
-  // metade iluminada desenhada à direita; depois espelhamos se precisar
-  var path = 'M' + c + ',' + (c - r) + ' A' + r + ',' + r + ' 0 0 1 ' + c + ',' + (c + r) +
-             ' A' + x.toFixed(2) + ',' + r + ' 0 0 ' + (crescent ? 0 : 1) + ' ' + c + ',' + (c - r) + 'Z';
-  var flip = (!waxing) !== (!!sul);   // minguante → esquerda; hemisfério sul inverte
-  var g = flip ? '<g transform="translate(58,0) scale(-1,1)">' : '<g>';
-  return '<svg width="58" height="58" viewBox="0 0 58 58">' +
-    '<circle cx="29" cy="29" r="26" fill="#1c2128"/>' +
-    g + '<path d="' + path + '" fill="#e6e1cf"/></g>' +
-    '<circle cx="29" cy="29" r="26" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1"/></svg>';
+function beep(freq, at, dur, vol) {
+  if (!actx) return;
+  try {
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.linearRampToValueAtTime(vol, at + 0.015);
+    g.gain.linearRampToValueAtTime(0.0001, at + dur);
+    o.connect(g); g.connect(actx.destination);
+    if (o.start) { o.start(at); o.stop(at + dur + 0.03); } else { o.noteOn(at); o.noteOff(at + dur + 0.03); }
+  } catch (e) {}
 }
-function renderMoon(d) {
-  var m = moon(d);
-  $('moonName').innerHTML = m.nome;
-  var prox = m.cheia < m.nova
-    ? 'cheia em <b>' + Math.round(m.cheia) + (Math.round(m.cheia) === 1 ? ' dia' : ' dias') + '</b>'
-    : 'nova em <b>' + Math.round(m.nova) + (Math.round(m.nova) === 1 ? ' dia' : ' dias') + '</b>';
-  if (Math.round(m.cheia) === 0) prox = '<b>cheia hoje</b>';
-  if (Math.round(m.nova) === 0 || Math.round(m.nova) === 30) prox = '<b>nova hoje</b>';
-  $('moonInfo').innerHTML = 'iluminação <b>' + Math.round(m.illum * 100) + '%</b> · ' + prox;
-  $('moonSvg').innerHTML = moonSvg(m.f, CONFIG.lat < 0);
+function somInicio() { if (actx) beep(1319, actx.currentTime + 0.02, 0.07, 0.25); }
+function somAlarme() {
+  if (!actx) return;
+  var t = actx.currentTime + 0.02;
+  beep(988, t, 0.12, 0.6); beep(988, t + 0.18, 0.12, 0.6); beep(1319, t + 0.36, 0.24, 0.6);
 }
+
+/* ---------------- timer ---------------- */
+var tm = { min: 0, total: 0, end: 0, left: 0, paused: false, alarm: false };
+var alarmeLoop = null, alarmeIni = 0, nightOn = false;
+
+(function buildChips() {
+  var html = '', ts = CONFIG.timers;
+  for (var i = 0; i < ts.length; i++) {
+    var m = ts[i];
+    html += '<div class="chip" data-min="' + m + '">' +
+      (m >= 60 && m % 60 === 0 ? (m / 60) + '<small>hora' + (m > 60 ? 's' : '') + '</small>' : m + '<small>min</small>') + '</div>';
+  }
+  $('tmChips').innerHTML = html;
+})();
+
+function fmtTimer(ms) {
+  var t = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
+  return h ? h + ':' + pad(m) + ':' + pad(s) : pad(m) + ':' + pad(s);
+}
+function tmSave() {
+  try { localStorage.setItem('painelTimer', JSON.stringify({ min: tm.min, total: tm.total, end: tm.end, left: tm.left, paused: tm.paused })); } catch (e) {}
+}
+function tmRestante() { return tm.paused ? tm.left : tm.end - new Date().getTime(); }
+
+function tmStart(min) {
+  pararAlarme();
+  tm.min = min; tm.total = min * 60000; tm.end = new Date().getTime() + tm.total;
+  tm.left = 0; tm.paused = false;
+  tmSave(); somInicio(); tmRender();
+}
+function tmCancel() {
+  pararAlarme();
+  tm.min = 0; tm.total = 0; tm.end = 0; tm.paused = false;
+  tmSave(); tmRender();
+}
+function tmPausa() {
+  if (!tm.total || tm.alarm) return;
+  if (tm.paused) { tm.end = new Date().getTime() + tm.left; tm.paused = false; }
+  else { tm.left = tm.end - new Date().getTime(); tm.paused = true; }
+  tmSave(); tmRender();
+}
+function tmDisparar() {
+  tm.alarm = true; tm.min = 0; tm.total = 0; tm.end = 0;
+  tmSave();
+  alarmeIni = new Date().getTime();
+  somAlarme();
+  alarmeLoop = setInterval(function () {
+    if (new Date().getTime() - alarmeIni > CONFIG.alarmeDuracao * 1000) { clearInterval(alarmeLoop); alarmeLoop = null; return; }
+    somAlarme();
+  }, 1500);
+  tmRender();
+}
+function pararAlarme() {
+  tm.alarm = false;
+  if (alarmeLoop) { clearInterval(alarmeLoop); alarmeLoop = null; }
+}
+
+function tmRender() {
+  var box = $('timer'), chips = $('tmChips').childNodes;
+  for (var i = 0; i < chips.length; i++) {
+    chips[i].className = 'chip' + (tm.total && +chips[i].getAttribute('data-min') === tm.min ? ' on' : '');
+  }
+  if (tm.alarm) {
+    box.className = 'alarm'; $('card').className = 'col between alarm';
+    $('tmTime').innerHTML = '00:00'; $('tmFill').style.width = '100%';
+    $('tmInfo').innerHTML = 'tempo! toque para parar';
+  } else if (!tm.total) {
+    box.className = 'idle'; $('card').className = 'col between';
+    $('tmTime').innerHTML = '00:00'; $('tmFill').style.width = '0';
+    $('tmInfo').innerHTML = 'escolha um tempo';
+  } else {
+    var r = tmRestante();
+    box.className = tm.paused ? 'paused' : 'run'; $('card').className = 'col between';
+    $('tmTime').innerHTML = fmtTimer(r);
+    $('tmFill').style.width = Math.min(100, (1 - r / tm.total) * 100).toFixed(2) + '%';
+    $('tmInfo').innerHTML = tm.paused ? 'pausado · toque nos números' : 'toca às ' + hm(new Date(tm.end));
+  }
+  aplicarNoite();
+}
+function tmTick() {
+  if (tm.total && !tm.paused && !tm.alarm && tm.end - new Date().getTime() <= 0) { tmDisparar(); return; }
+  if (tm.total) tmRender();
+}
+
+// toques: qualquer toque libera o som; durante o alarme, qualquer toque para
+var ultimoToque = 0;
+function onTap(e) {
+  var agora = new Date().getTime();
+  if (e.type === 'click' && agora - ultimoToque < 800) return;   // clique sintético após o toque
+  if (e.type === 'touchstart') ultimoToque = agora;
+  unlockAudio();
+  if (tm.alarm) { pararAlarme(); tmRender(); if (e.type === 'touchstart') e.preventDefault(); return; }
+  var t = e.target, box = $('timer');
+  while (t && t !== document.body) {
+    if (t.getAttribute && t.getAttribute('data-min')) { tmStart(+t.getAttribute('data-min')); break; }
+    if (t.id === 'tmCancel') { tmCancel(); break; }
+    if (t.id === 'tmTime') { tmPausa(); break; }
+    if (t === box) break;
+    t = t.parentNode;
+  }
+  if (e.type === 'touchstart') e.preventDefault();
+}
+$('stage').addEventListener('touchstart', onTap, false);
+$('stage').addEventListener('click', onTap, false);
+
+// retoma um timer que estava rodando antes de recarregar a página
+(function () {
+  try {
+    var v = JSON.parse(localStorage.getItem('painelTimer') || 'null');
+    if (v && v.total && (v.paused || v.end > new Date().getTime())) {
+      tm.min = v.min; tm.total = v.total; tm.end = v.end; tm.left = v.left; tm.paused = v.paused;
+    }
+  } catch (e) {}
+})();
 
 /* ---------------- sol (algoritmo do SunCalc, local) ---------------- */
 function sunTimes(date, lat, lng) {
@@ -419,16 +552,19 @@ function tick() {
     var noite = CONFIG.noiteInicio > CONFIG.noiteFim
       ? (h >= CONFIG.noiteInicio || h < CONFIG.noiteFim)
       : (h >= CONFIG.noiteInicio && h < CONFIG.noiteFim);
-    $('night').style.opacity = noite ? CONFIG.noiteOpacidade : 0;
+    nightOn = noite;
+    aplicarNoite();
 
     if (d.getDate() !== lastDay) { lastDay = d.getDate(); renderCal(d); renderSun(d); }
-    if (mi % 10 === 0 || !$('moonSvg').innerHTML) renderMoon(d);
-    if (h === 4 && mi === 0) setTimeout(function () { location.reload(); }, 5000);
+    if (h === 4 && mi === 0 && !tm.total && !tm.alarm) setTimeout(function () { location.reload(); }, 5000);
   }
+  tmTick();
 }
+function aplicarNoite() { $('night').style.opacity = nightOn && !tm.alarm ? CONFIG.noiteOpacidade : 0; }
 
 
 /* ---------------- start ---------------- */
+tmRender();
 setInterval(tick, 1000);
 tick();
 </script>
