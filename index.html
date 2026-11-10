@@ -11,7 +11,7 @@
 <!--
   Painel para iPad mini 1 (iOS 9.3.5 / Safari 9) — 1024 x 768 em paisagem.
   JS em ES5 puro; CSS sem grid, sem variáveis, sem vh.
-  Tudo roda no próprio iPad (relógio, calendário, timer, sol, binário),
+  Tudo roda no próprio iPad (relógio, calendário, Terra, timer, sol, binário),
   sem nenhuma dependência de internet (o iOS 9 não abre as APIs atuais).
 -->
 <style>
@@ -109,9 +109,22 @@
   }
   .sep { height: 1px; background: rgba(255,255,255,.07); }
 
-  /* calendário */
-  #calHead { margin-bottom: 10px; }
-  #calMonth { font-size: 17px; color: #fff; font-weight: 500; text-transform: capitalize; }
+  /* abas: calendário | terra */
+  #calHead { margin-bottom: 8px; height: 30px; }
+  .tab { font-size: 15px; font-weight: 500; color: #545d68; padding: 0 12px; height: 30px; line-height: 30px; border-radius: 8px; }
+  .tab:first-child { margin-left: -10px; }
+  .tab.on { color: #fff; background: rgba(255,255,255,.07); }
+  #tabRight { letter-spacing: 1.6px; }
+  .pane { height: 214px; }
+
+  /* terra */
+  #terraCv { width: 214px; height: 214px; display: block; -webkit-flex-shrink: 0; flex-shrink: 0; }
+  #terraInfo { padding-left: 10px; }
+  #terraNome { font-size: 24px; font-weight: 500; color: #fff; line-height: 1; }
+  #terraSeed { font-size: 10px; letter-spacing: 1.6px; color: #f2cc60; margin-top: 6px; }
+  .tst { font-size: 12px; color: #7d8590; height: 21px; line-height: 21px; }
+  .tst b { color: #e8eaed; font-weight: 500; }
+  #terraNovo { width: auto; height: 34px; padding-top: 0; line-height: 32px; font-size: 13px; color: #f2cc60; }
   .cw { width: 47px; text-align: center; }
   .dow { font-size: 11px; color: #545d68; font-weight: 600; letter-spacing: 1px; height: 22px; line-height: 22px; }
   .cd { height: 32px; line-height: 32px; font-size: 15px; color: #aeb5bd; }
@@ -170,7 +183,7 @@
 <body>
 <div id="stage">
   <div id="top" class="row center">
-    <div id="status" class="grow">v5</div>
+    <div id="status" class="grow">v6</div>
   </div>
 
   <div id="main" class="row">
@@ -204,8 +217,24 @@
     <!-- DIREITA -->
     <div id="card" class="col between">
       <div>
-        <div id="calHead" class="row between center"><span id="calMonth"></span><span class="label" id="calYear"></span></div>
-        <div id="cal"></div>
+        <div id="calHead" class="row between center">
+          <div class="row"><div class="tab on" data-tab="cal">Calendário</div><div class="tab" data-tab="terra">Terra</div></div>
+          <span class="label" id="tabRight"></span>
+        </div>
+        <div id="paneCal" class="pane"><div id="cal"></div></div>
+        <div id="paneTerra" class="pane row" style="display:none">
+          <canvas id="terraCv" width="214" height="214"></canvas>
+          <div id="terraInfo" class="col between grow">
+            <div><div id="terraNome">Terra</div><div id="terraSeed">SEMENTE ----</div></div>
+            <div>
+              <div class="tst row between"><span>Oceano</span><b class="num" id="tOcean">–</b></div>
+              <div class="tst row between"><span>Terras</span><b class="num" id="tLand">–</b></div>
+              <div class="tst row between"><span>Gelo</span><b class="num" id="tIce">–</b></div>
+              <div class="tst row between"><span>Árvores</span><b class="num" id="tTrees">–</b></div>
+            </div>
+            <div class="chip" id="terraNovo">novo planeta</div>
+          </div>
+        </div>
       </div>
 
       <div class="sep"></div>
@@ -303,10 +332,11 @@ function renderBin(h, m, s) {
 }
 
 /* ---------------- calendário ---------------- */
+var calLabel = '', aba = 'cal';
 function renderCal(d) {
   var y = d.getFullYear(), mo = d.getMonth(), today = d.getDate();
-  $('calMonth').innerHTML = MESES[mo];
-  $('calYear').innerHTML = y;
+  calLabel = MESES[mo] + ' ' + y;
+  if (aba === 'cal') $('tabRight').innerHTML = calLabel;
   var ini = new Date(y, mo, 1).getDay();
   var nDias = new Date(y, mo + 1, 0).getDate();
   var nAnt = new Date(y, mo, 0).getDate();
@@ -460,6 +490,8 @@ function onTap(e) {
     if (t.getAttribute && t.getAttribute('data-min')) { tmStart(+t.getAttribute('data-min')); break; }
     if (t.id === 'tmCancel') { tmCancel(); break; }
     if (t.id === 'tmTime') { tmPausa(); break; }
+    if (t.getAttribute && t.getAttribute('data-tab')) { setAba(t.getAttribute('data-tab')); break; }
+    if (t.id === 'terraNovo') { terraNovo(); break; }
     if (t === box) break;
     t = t.parentNode;
   }
@@ -477,6 +509,227 @@ $('stage').addEventListener('click', onTap, false);
     }
   } catch (e) {}
 })();
+
+/* ---------------- Terra: planeta procedural em canvas 2D ----------------
+   Versão leve do "Planeta Semente" (three.js/WebGL) para o iPad mini 1:
+   mesmo ruído, mesma paleta e mesmas regras de bioma, mas pintado numa
+   textura 256x128 e projetado numa esfera pixel a pixel (sem bibliotecas). */
+var TW = 256, TH = 128, TSZ = 214, TR = 82, TCX = 107, TCY = 107;
+var tSeed = 4821;
+function tRng(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function tHash(x, y, z) {
+  var h = Math.imul(x, 374761393) ^ Math.imul(y, 668265263) ^ Math.imul(z, 1274126177) ^ Math.imul(tSeed, 144665);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  h ^= h >>> 16;
+  return (h >>> 0) / 4294967295;
+}
+function tNoise(x, y, z) {
+  var ix = Math.floor(x), iy = Math.floor(y), iz = Math.floor(z);
+  var fx = x - ix, fy = y - iy, fz = z - iz;
+  fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy); fz = fz * fz * (3 - 2 * fz);
+  var a = tHash(ix, iy, iz), b = tHash(ix + 1, iy, iz), c = tHash(ix, iy + 1, iz), d = tHash(ix + 1, iy + 1, iz);
+  var e = tHash(ix, iy, iz + 1), f = tHash(ix + 1, iy, iz + 1), g = tHash(ix, iy + 1, iz + 1), h = tHash(ix + 1, iy + 1, iz + 1);
+  var ab = a + (b - a) * fx, cd = c + (d - c) * fx, ef = e + (f - e) * fx, gh = g + (h - g) * fx;
+  var lo = ab + (cd - ab) * fy, hi = ef + (gh - ef) * fy;
+  return lo + (hi - lo) * fz;
+}
+function tFbm(x, y, z, oct) {
+  var s = 0, a = 0.5, n = 0, f = 1;
+  for (var o = 0; o < oct; o++) { s += a * tNoise(x * f + 17.3, y * f + 5.1, z * f + 31.7); n += a; a *= 0.5; f *= 2.03; }
+  return s / n;
+}
+
+var tTex = new Uint8Array(TW * TH * 3), tWater = new Uint8Array(TW * TH), tCloud = new Uint8Array(TW * TH);
+var PAL = {
+  deep: [12, 42, 82], shallow: [45, 134, 168], sand: [217, 197, 138], grass: [111, 174, 78],
+  forest: [59, 125, 66], rock: [124, 116, 104], snow: [242, 246, 251], ice: [220, 236, 247], tree: [31, 90, 54]
+};
+function terraGerar() {
+  var sea = 0.5, freq = 1.5, rnd = tRng(tSeed * 7 + 1);
+  var area = 0, aO = 0, aL = 0, aI = 0, arv = 0;
+  for (var y = 0; y < TH; y++) {
+    var lat = (0.5 - (y + 0.5) / TH) * Math.PI, cl = Math.cos(lat), sl = Math.sin(lat);
+    for (var x = 0; x < TW; x++) {
+      var lon = (x + 0.5) / TW * 2 * Math.PI, px = cl * Math.cos(lon), py = sl, pz = cl * Math.sin(lon);
+      var e = (tFbm(px * freq, py * freq, pz * freq, 5) - 0.5) * 2.2 + 0.5 - sea;
+      if (e < -0.12) e = -0.12;
+      var latj = Math.abs(py) + (tNoise(px * 6, py * 6, pz * 6) - 0.5) * 0.14;
+      var i = y * TW + x, c, w = 0;
+      area += cl;
+      if (latj > 0.84) { aI += cl; c = e > 0.05 ? PAL.snow : PAL.ice; }
+      else if (e <= 0) {
+        aO += cl; w = 1;
+        var k = 1 + e / 0.12;
+        c = [PAL.deep[0] + (PAL.shallow[0] - PAL.deep[0]) * k, PAL.deep[1] + (PAL.shallow[1] - PAL.deep[1]) * k, PAL.deep[2] + (PAL.shallow[2] - PAL.deep[2]) * k];
+      } else {
+        aL += cl;
+        if (e < 0.014) c = PAL.sand;
+        else if (e < 0.07) c = rnd() < 0.08 ? (arv++, PAL.tree) : PAL.grass;
+        else if (e < 0.14) c = rnd() < 0.18 ? (arv++, PAL.tree) : PAL.forest;
+        else if (e < 0.2) c = PAL.rock;
+        else c = PAL.snow;
+      }
+      var j = 1 + (rnd() - 0.5) * 0.14;
+      tTex[i * 3] = Math.min(255, c[0] * j); tTex[i * 3 + 1] = Math.min(255, c[1] * j); tTex[i * 3 + 2] = Math.min(255, c[2] * j);
+      tWater[i] = w;
+      var nv = tFbm(px * 2.4 + 40, py * 3.4 + 40, pz * 2.4 + 40, 4);
+      var ca = (nv - 0.57) / 0.1; ca = ca < 0 ? 0 : ca > 1 ? 1 : ca;
+      tCloud[i] = Math.round(ca * 225);
+    }
+  }
+  var pct = function (v) { return Math.round(v / area * 100) + '%'; };
+  $('tOcean').innerHTML = pct(aO); $('tLand').innerHTML = pct(aL); $('tIce').innerHTML = pct(aI);
+  $('tTrees').innerHTML = milhar(arv);
+  $('terraSeed').innerHTML = 'SEMENTE ' + ('000' + tSeed).slice(-4);
+}
+
+// tabelas da projeção (fixas): para cada pixel do disco, linha/coluna base da textura e iluminação
+var tPix, tRow, tU0, tShade, tSpec, tRimA, tEdge, tN = 0, tBg, tCtx, tImg, tPronto = false;
+function terraPreparar() {
+  var cv = $('terraCv');
+  tCtx = cv.getContext('2d');
+  tImg = tCtx.createImageData(TSZ, TSZ);
+  var max = Math.ceil(Math.PI * (TR + 1) * (TR + 1)) + 8;
+  tPix = new Uint32Array(max); tRow = new Uint32Array(max); tU0 = new Float32Array(max);
+  tShade = new Float32Array(max); tSpec = new Float32Array(max); tRimA = new Float32Array(max); tEdge = new Float32Array(max);
+  tBg = new Uint8ClampedArray(TSZ * TSZ * 4);
+  var tilt = 0.41, ct = Math.cos(tilt), st = Math.sin(tilt);
+  var L = [-0.55, 0.5, 0.67], ll = Math.sqrt(L[0] * L[0] + L[1] * L[1] + L[2] * L[2]);
+  L = [L[0] / ll, L[1] / ll, L[2] / ll];
+  var Hx = L[0], Hy = L[1], Hz = L[2] + 1, hl = Math.sqrt(Hx * Hx + Hy * Hy + Hz * Hz); Hx /= hl; Hy /= hl; Hz /= hl;
+  var star = tRng(99);
+  for (var py = 0; py < TSZ; py++) {
+    for (var px = 0; px < TSZ; px++) {
+      var dx = (px + 0.5 - TCX), dy = (py + 0.5 - TCY), r = Math.sqrt(dx * dx + dy * dy), o = (py * TSZ + px) * 4;
+      // fundo: brilho da atmosfera
+      if (r > TR - 1) {
+        var g = (r - TR) / (TR * 0.2); g = g < 0 ? 0 : g;
+        if (g < 1) { var a = (1 - g) * (1 - g) * 0.5; tBg[o] = 97; tBg[o + 1] = 158; tBg[o + 2] = 255; tBg[o + 3] = a * 255; }
+      }
+      if (r < TR + 0.5) {
+        var nx = dx / TR, ny = -dy / TR, q = 1 - nx * nx - ny * ny, nz = q > 0 ? Math.sqrt(q) : 0;
+        var bx = nx * ct + ny * st, by = -nx * st + ny * ct;
+        var lat = Math.asin(by > 1 ? 1 : by < -1 ? -1 : by), lon = Math.atan2(bx, nz);
+        var ty = Math.floor((0.5 - lat / Math.PI) * TH); if (ty < 0) ty = 0; if (ty >= TH) ty = TH - 1;
+        var u0 = (lon / (2 * Math.PI) + 1) * TW; u0 = u0 % TW;
+        var dl = nx * L[0] + ny * L[1] + nz * L[2];
+        var dif = dl > 0 ? dl : 0;
+        var sp = nx * Hx + ny * Hy + nz * Hz; sp = sp > 0 ? Math.pow(sp, 40) * 0.7 : 0;
+        tPix[tN] = o; tRow[tN] = ty * TW; tU0[tN] = u0;
+        tShade[tN] = 0.1 + 0.98 * Math.pow(dif, 0.85);
+        tSpec[tN] = sp * 255;
+        tRimA[tN] = Math.pow(1 - nz, 2.6) * (0.25 + dif) * 0.75;
+        var ed = TR - r + 0.5; tEdge[tN] = ed > 1 ? 1 : ed < 0 ? 0 : ed;
+        tN++;
+      }
+    }
+  }
+  for (var s2 = 0; s2 < 46; s2++) {
+    var sx = Math.floor(star() * TSZ), sy = Math.floor(star() * TSZ), so = (sy * TSZ + sx) * 4;
+    var ddx = sx - TCX, ddy = sy - TCY;
+    if (ddx * ddx + ddy * ddy < (TR * 1.25) * (TR * 1.25)) continue;
+    var b = 120 + Math.floor(star() * 110);
+    tBg[so] = 207; tBg[so + 1] = 217; tBg[so + 2] = 255; tBg[so + 3] = b;
+  }
+  tPronto = true;
+}
+
+var tRot = 0, tRotC = 0, tMoon = 0.6, tDrag = null, tLast = 0, tLoop = false;
+function terraDesenhar() {
+  var d = tImg.data, tex = tTex, wat = tWater, cld = tCloud;
+  d.set(tBg);
+  var ru = tRot, rc = tRotC;
+  for (var k = 0; k < tN; k++) {
+    var o = tPix[k], row = tRow[k], u = tU0[k];
+    var t = row + (((u + ru) | 0) & 255), c = row + (((u + rc) | 0) & 255);
+    var t3 = t * 3, r = tex[t3], g = tex[t3 + 1], b = tex[t3 + 2];
+    var ca = cld[c];
+    if (ca) { var a = ca / 255; r += (244 - r) * a; g += (247 - g) * a; b += (252 - b) * a; }
+    var s = tShade[k];
+    r *= s; g *= s; b *= s;
+    if (wat[t] && !ca) { var sp = tSpec[k]; r += sp; g += sp; b += sp; }
+    var rim = tRimA[k];
+    r += 97 * rim; g += 158 * rim; b += 255 * rim;
+    var e = tEdge[k];
+    if (e < 1) {
+      var ba = d[o + 3] / 255;
+      r = r * e + d[o] * (1 - e); g = g * e + d[o + 1] * (1 - e); b = b * e + d[o + 2] * (1 - e);
+      d[o + 3] = 255 * (e + ba * (1 - e));
+    } else d[o + 3] = 255;
+    d[o] = r; d[o + 1] = g; d[o + 2] = b;
+  }
+  tCtx.putImageData(tImg, 0, 0);
+  // lua em órbita inclinada; some atrás do planeta
+  var mx = TCX + 96 * Math.cos(tMoon), my = TCY + 26 * Math.sin(tMoon) - 10 * Math.cos(tMoon), frente = Math.sin(tMoon) > 0;
+  var ddx = mx - TCX, ddy = my - TCY;
+  if (frente || ddx * ddx + ddy * ddy > (TR + 7) * (TR + 7)) {
+    var gr = tCtx.createRadialGradient(mx - 2.5, my - 2.5, 0.5, mx, my, 6.5);
+    gr.addColorStop(0, '#e6e1d8'); gr.addColorStop(0.6, '#a9a49c'); gr.addColorStop(1, '#3d3b38');
+    tCtx.fillStyle = gr;
+    tCtx.beginPath(); tCtx.arc(mx, my, 6, 0, Math.PI * 2); tCtx.fill();
+  }
+}
+function terraFrame(now) {
+  if (aba !== 'terra') { tLoop = false; return; }
+  requestAnimationFrame(terraFrame);
+  if (now - tLast < 33) return;          // ~30 fps: suficiente e poupa o iPad
+  var dt = tLast ? Math.min(0.1, (now - tLast) / 1000) : 0; tLast = now;
+  if (!tDrag) tRot -= dt * TW / 52;        // uma volta a cada ~52 s
+  tRotC -= dt * TW / 40;
+  tMoon += dt * 0.3;
+  tRot = ((tRot % TW) + TW) % TW; tRotC = ((tRotC % TW) + TW) % TW;
+  terraDesenhar();
+}
+function terraIniciar() {
+  if (!tPronto) {
+    $('tabRight').innerHTML = 'gerando…';
+    setTimeout(function () {
+      terraPreparar(); terraGerar();
+      if (aba === 'terra') $('tabRight').innerHTML = '↔ arraste';
+      terraIniciar();
+    }, 30);
+    return;
+  }
+  if (!tLoop) { tLoop = true; tLast = 0; requestAnimationFrame(terraFrame); }
+}
+function terraNovo() {
+  tSeed = Math.floor(Math.random() * 9999) + 1;
+  try { localStorage.setItem('painelSemente', tSeed); } catch (e) {}
+  terraGerar();
+  if (tPronto) terraDesenhar();
+}
+function setAba(a) {
+  aba = a === 'terra' ? 'terra' : 'cal';
+  var tabs = document.querySelectorAll('.tab');
+  for (var i = 0; i < tabs.length; i++) tabs[i].className = 'tab' + (tabs[i].getAttribute('data-tab') === aba ? ' on' : '');
+  $('paneCal').style.display = aba === 'cal' ? 'block' : 'none';
+  $('paneTerra').style.display = aba === 'terra' ? '' : 'none';
+  $('tabRight').innerHTML = aba === 'cal' ? calLabel : '↔ arraste';
+  try { localStorage.setItem('painelAba', aba); } catch (e) {}
+  if (aba === 'terra') terraIniciar();
+}
+// arrastar para girar (toque e mouse)
+(function () {
+  var cv = $('terraCv'), k = TW / (2 * Math.PI * TR);
+  function ini(x) { tDrag = { x: x }; }
+  function mov(x) { if (!tDrag) return; tRot -= (x - tDrag.x) * k; tDrag.x = x; }
+  function fim() { tDrag = null; }
+  cv.addEventListener('touchstart', function (e) { ini(e.touches[0].pageX); }, false);
+  cv.addEventListener('touchmove', function (e) { mov(e.touches[0].pageX); e.preventDefault(); }, false);
+  cv.addEventListener('touchend', fim, false);
+  cv.addEventListener('touchcancel', fim, false);
+  cv.addEventListener('mousedown', function (e) { ini(e.pageX); }, false);
+  window.addEventListener('mousemove', function (e) { mov(e.pageX); }, false);
+  window.addEventListener('mouseup', fim, false);
+})();
+try { var sv = +localStorage.getItem('painelSemente'); if (sv > 0) tSeed = sv; } catch (e) {}
 
 /* ---------------- sol (algoritmo do SunCalc, local) ---------------- */
 function sunTimes(date, lat, lng) {
@@ -567,6 +820,7 @@ function aplicarNoite() { $('night').style.opacity = nightOn && !tm.alarm ? CONF
 tmRender();
 setInterval(tick, 1000);
 tick();
+(function () { var a = 'cal'; try { a = localStorage.getItem('painelAba') || 'cal'; } catch (e) {} setAba(a); })();
 </script>
 </body>
 </html>
